@@ -20,16 +20,35 @@
       margin: 0 auto;
     }
     .back-btn {
-      display: inline-block;
-      margin-bottom: 30px;
-      color: #4da6ff;
+      
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      
+      padding: 12px 24px;
+      border-radius: 50px;
+      
+      background-color: rgba(30, 30, 30, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      
+      color: #e0e0e0;
       text-decoration: none;
-      font-size: 1.1rem;
-      transition: color 0.3s;
+      font-size: 1rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
     }
+
     .back-btn:hover {
-      color: #ffffff;
+      background-color: rgba(42, 42, 42, 0.9);
+      color: #4da6ff;
+      border-color: #4da6ff;
+      transform: translateX(-5px); 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     }
+
     h1 {
       font-size: 3.5rem;
       margin-top: 0;
