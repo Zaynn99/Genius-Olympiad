@@ -1,13 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<html>
-  <head>
-  <title> When Rivers Rise: The Future of Flood Prediction </title>
-    </head>
-  <body>
-    <main>
-      </main>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>When Rivers Rise: The Future of Flood Prediction</title>
+  <style>
+    body {
+      background-color: #121212;
+      background: radial-gradient(circle at top left, #1a1a2e, #121212);
+      color: #f1f1f1;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .left-panel {
+      max-width: 60%;
+    }
+
+    .left-panel h1 {
+      font-size: 4.5rem;
+      margin: 0;
+      line-height: 1.1;
+      background: -webkit-linear-gradient(#ffffff, #4da6ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .right-panel {
+      align-self: flex-end; 
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .section-button {
+      background-color: rgba(30, 30, 30, 0.6);
+      backdrop-filter: blur(10px);
+      color: inherit;
+      text-decoration: none;
+      padding: 25px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .section-button:hover {
+      background-color: rgba(42, 42, 42, 0.9);
+      transform: translateY(-4px);
+      border-color: #4da6ff;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+
+    .section-button h2 {
+      color: #e0e0e0;
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: normal;
+      transition: color 0.3s ease;
+    }
+
+    .section-button:hover h2 {
+      color: #4da6ff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="left-panel">
+    <h1>When Rivers Rise:<br>The Future of Flood Prediction</h1>
+  </div>
+
+  <div class="right-panel">
+    <a href="who-suffers.html" class="section-button">
+      <h2>Who Suffers from Floods?</h2>
+    </a>
+    <a href="affected-zones.html" class="section-button">
+      <h2>Which Zones Are Most at Risk?</h2>
+    </a>
+    <a href="combating-floods.html" class="section-button">
+      <h2>How Can We Combat Flooding?</h2>
+    </a>
+    <a href="tech-solutions.html" class="section-button">
+      <h2>The Tech Front: AI & Engineering</h2>
+    </a>
+  </div>
+
+</body>
 </html>
