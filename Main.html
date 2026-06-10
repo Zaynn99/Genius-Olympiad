@@ -4,95 +4,270 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>When Rivers Rise: The Future of Flood Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --primary-blue: #4da6ff;
+      --primary-cyan: #00e5ff;
+      --text-main: #f1f1f1;
+      --text-muted: #9ba1a6;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+    }
+
     body {
-      background-color: #121212;
-      background: radial-gradient(circle at top left, #1a1a2e, #121212);
-      color: #f1f1f1;
-      font-family: Arial, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(77, 166, 255, 0.08), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(0, 229, 255, 0.05), transparent 25%);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       box-sizing: border-box;
-      padding: 60px;
+      padding: 40px 8%;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      display: flex;
       justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 1400px;
+      gap: 60px;
     }
 
     .left-panel {
-      max-width: 60%;
+      flex: 1;
+      max-width: 600px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 16px;
+      background: rgba(77, 166, 255, 0.1);
+      border: 1px solid rgba(77, 166, 255, 0.2);
+      border-radius: 50px;
+      color: var(--primary-blue);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
     }
 
     .left-panel h1 {
-      font-size: 4.5rem;
-      margin: 0;
+      font-size: clamp(3rem, 5vw, 4.5rem);
+      margin: 0 0 20px 0;
       line-height: 1.1;
-      background: -webkit-linear-gradient(#ffffff, #4da6ff);
+      font-weight: 700;
+    }
+
+    .left-panel h1 .gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, var(--primary-blue) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
+    .left-panel p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-weight: 300;
+      margin: 0;
+    }
+
     .right-panel {
-      align-self: flex-end; 
+      flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      max-width: 600px;
-      width: 100%;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 700px;
     }
 
     .section-button {
-      background-color: rgba(30, 30, 30, 0.6);
-      backdrop-filter: blur(10px);
-      color: inherit;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 30px;
       text-decoration: none;
-      padding: 25px 20px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: inherit;
       display: flex;
-      align-items: center;
-      transition: all 0.3s ease;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      position: relative;
+      overflow: hidden;
+      min-height: 140px;
+    }
+
+    .section-button::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at top right, rgba(77, 166, 255, 0.1), transparent 50%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
 
     .section-button:hover {
-      background-color: rgba(42, 42, 42, 0.9);
-      transform: translateY(-4px);
-      border-color: #4da6ff;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(77, 166, 255, 0.4);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 
+                  0 0 20px rgba(77, 166, 255, 0.1);
+    }
+
+    .section-button:hover::before {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-blue);
+      transition: all 0.3s ease;
+    }
+
+    .section-button:hover .card-icon {
+      background: var(--primary-blue);
+      color: #fff;
+      transform: scale(1.1);
+    }
+
+    .arrow-icon {
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .section-button:hover .arrow-icon {
+      color: var(--primary-cyan);
+      transform: translateX(5px);
     }
 
     .section-button h2 {
-      color: #e0e0e0;
-      margin: 0;
-      font-size: 1.1rem;
-      font-weight: normal;
+      margin: 0 0 8px 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      position: relative;
+      z-index: 2;
       transition: color 0.3s ease;
     }
 
     .section-button:hover h2 {
-      color: #4da6ff;
+      color: #ffffff;
+    }
+
+    .section-button p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      position: relative;
+      z-index: 2;
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+      }
+      .left-panel {
+        max-width: 800px;
+      }
+      .right-panel {
+        width: 100%;
+      }
+      body {
+        padding: 60px 5%;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="left-panel">
-    <h1>When Rivers Rise:<br>The Future of Flood Prediction</h1>
-  </div>
+  <div class="container">
+    <div class="left-panel">
+      <div class="badge">Dashboard</div>
+      <h1>When Rivers Rise:<br><span class="gradient-text">The Future of Flood Prediction</span></h1>
+      <p>Explore the global impact of flooding, identify high-risk zones, and discover the engineering solutions shaping our defense against rising waters.</p>
+    </div>
 
-  <div class="right-panel">
-    <a href="affected_zones.html" class="section-button">
-      <h2>Which Zones Are Most at Risk?</h2>
-    </a>
-    <a href="who_suffers.html" class="section-button">
-      <h2>Who Suffers from Floods?</h2>
-    </a>
-    <a href="combating-floods.html" class="section-button">
-      <h2>How Can We Combat Flooding?</h2>
-    </a>
-    <a href="tech-solution.html" class="section-button">
-      <h2>The Tech Front: AI & Engineering</h2>
-    </a>
+    <div class="right-panel">
+      <a href="affected_zones.html" class="section-button">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path></svg>
+          </div>
+          <span class="arrow-icon">→</span>
+        </div>
+        <div>
+          <h2>Risk Zones</h2>
+          <p>Global map of the areas most vulnerable to flooding.</p>
+        </div>
+      </a>
+
+      <a href="who_suffers.html" class="section-button">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <span class="arrow-icon">→</span>
+        </div>
+        <div>
+          <h2>Human Impact</h2>
+          <p>Analyze populations affected by rising water levels.</p>
+        </div>
+      </a>
+
+      <a href="combating-floods.html" class="section-button">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <span class="arrow-icon">→</span>
+        </div>
+        <div>
+          <h2>Combat & Defense</h2>
+          <p>Simulation tools and methods for preventing disasters.</p>
+        </div>
+      </a>
+
+      <a href="tech-solution.html" class="section-button">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </div>
+          <span class="arrow-icon">→</span>
+        </div>
+        <div>
+          <h2>Tech & Systems</h2>
+          <p>Real-time automated forecasting and telemetry networks.</p>
+        </div>
+      </a>
+    </div>
   </div>
 
 </body>

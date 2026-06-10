@@ -5,13 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Global Flood Risk & Historical Disasters</title>
   
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --primary-blue: #4da6ff;
+      --primary-cyan: #00e5ff;
+      --primary-red: #ff4d4d;
+      --primary-orange: #ff8c00;
+      --text-main: #f1f1f1;
+      --text-muted: #9ba1a6;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+    }
+
     body {
-      background: radial-gradient(circle at top center, #1a1a2e 0%, #0d0d14 100%);
-      color: #f1f1f1;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(77, 166, 255, 0.08), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(0, 229, 255, 0.05), transparent 25%);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
       margin: 0;
       padding: 40px 20px;
       min-height: 100vh;
@@ -28,46 +44,56 @@
       position: absolute;
       top: 0;
       left: 0;
-      padding: 10px 20px;
-      border-radius: 8px;
-      background: rgba(30, 30, 40, 0.7);
+      padding: 10px 24px;
+      border-radius: 50px;
+      background: var(--card-bg);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #e0e0e0;
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
       text-decoration: none;
       font-size: 0.95rem;
-      font-weight: 600;
-      display: inline-flex;
+      font-weight: 500;
+      display: flex;
       align-items: center;
       transition: all 0.3s ease;
       z-index: 1000;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
     
     .back-btn:hover {
-      background: rgba(255, 77, 77, 0.15);
-      color: #ff4d4d;
-      border-color: rgba(255, 77, 77, 0.4);
-      transform: translateX(-3px);
+      background: rgba(77, 166, 255, 0.1);
+      color: var(--primary-blue);
+      border-color: rgba(77, 166, 255, 0.4);
+      transform: translateX(-5px);
     }
     
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-top: 60px;
+    }
+
     h1 {
-      font-size: 3rem;
-      margin: 20px 0 10px 0;
-      background: linear-gradient(135deg, #ffffff 0%, #ff4d4d 100%);
+      font-size: clamp(2.5rem, 4vw, 3.5rem);
+      margin: 0 0 15px 0;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, var(--primary-blue) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-align: center;
-      letter-spacing: -0.5px;
     }
     
     p.intro-text {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       line-height: 1.6;
-      color: #a0a0b0;
+      color: var(--text-muted);
+      font-weight: 300;
       text-align: center;
       max-width: 850px;
-      margin: 0 auto 30px auto;
+      margin: 0 auto;
     }
     
     .map-wrapper {
@@ -75,66 +101,89 @@
       width: 100%;
       height: 75vh;
       min-height: 600px;
-      border-radius: 16px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 77, 77, 0.15);
-      border: 1px solid rgba(255, 77, 77, 0.3);
+      border-radius: 24px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
       overflow: hidden;
-      background: #0d0d14;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
     #flood-map {
       width: 100%;
       height: 100%;
-      background: #0d0d14;
+      background: #050508;
+    }
+
+    .leaflet-container {
+      font-family: 'Outfit', sans-serif;
     }
 
     .map-legend {
-      background: rgba(15, 15, 20, 0.85);
-      padding: 15px 20px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 77, 77, 0.3);
-      color: #e0e0e0;
-      font-size: 14px;
+      background: rgba(10, 10, 15, 0.85);
+      padding: 20px 24px;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 400;
       line-height: 1.6;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
     .leaflet-popup-content-wrapper {
-      background: rgba(20, 20, 30, 0.95);
-      color: #fff;
-      border: 1px solid rgba(255, 77, 77, 0.5);
-      border-radius: 8px;
-      backdrop-filter: blur(8px);
+      background: rgba(15, 15, 20, 0.9);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
     }
+
     .leaflet-popup-tip {
-      background: rgba(20, 20, 30, 0.95);
-      border: 1px solid rgba(255, 77, 77, 0.5);
+      background: rgba(15, 15, 20, 0.9);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
     }
+
     .leaflet-container a.leaflet-popup-close-button {
-      color: #ff4d4d;
+      color: var(--text-muted);
+      padding: 4px;
+      transition: color 0.3s ease;
+    }
+
+    .leaflet-container a.leaflet-popup-close-button:hover {
+      color: var(--primary-cyan);
     }
 
     .popup-title {
       margin: 0 0 8px 0;
       color: #fff;
-      font-size: 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      padding-bottom: 5px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 8px;
     }
+
     .popup-year {
-      color: #ffaa33;
-      font-weight: bold;
-      font-size: 13px;
+      color: var(--primary-orange);
+      font-weight: 600;
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 1px;
       display: block;
       margin-bottom: 8px;
     }
+
     .popup-desc {
-      font-size: 13px;
+      font-size: 0.9rem;
       line-height: 1.5;
-      color: #cccccc;
+      color: var(--text-muted);
+      font-weight: 300;
       margin: 0;
     }
 
@@ -144,22 +193,25 @@
       right: 20px;
       z-index: 1000;
       display: flex;
-      gap: 1px;
-      background: rgba(20, 20, 30, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      gap: 8px;
+      background: rgba(10, 10, 15, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
 
     .layer-btn {
       background: transparent;
-      color: #a0a0b0;
-      border: none;
-      padding: 12px 20px;
-      font-size: 14px;
-      font-weight: 600;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      font-weight: 500;
+      border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
       outline: none;
@@ -167,20 +219,21 @@
 
     .layer-btn:hover {
       background: rgba(255, 255, 255, 0.05);
-    }
-
-    .layer-btn.active {
-      color: #fff;
+      color: var(--text-main);
     }
 
     .layer-btn#btn-danger.active {
-      background: rgba(255, 77, 77, 0.2);
-      border-bottom: 3px solid #ff4d4d;
+      background: rgba(255, 77, 77, 0.1);
+      color: var(--primary-red);
+      border-color: rgba(255, 77, 77, 0.3);
+      box-shadow: inset 0 0 10px rgba(255, 77, 77, 0.1);
     }
 
     .layer-btn#btn-history.active {
-      background: rgba(255, 140, 0, 0.2);
-      border-bottom: 3px solid #ff8c00;
+      background: rgba(255, 140, 0, 0.1);
+      color: var(--primary-orange);
+      border-color: rgba(255, 140, 0, 0.3);
+      box-shadow: inset 0 0 10px rgba(255, 140, 0, 0.1);
     }
 
     .legend-item {
@@ -194,10 +247,12 @@
 <body>
   
   <div class="container">
-    <a href="Main.html" class="back-btn">← Back to Dashboard</a>
+    <a href="Main.html" class="back-btn">← Back</a>
     
-    <h1>Global Flood Risk & Echoes of the Deep</h1>
-    <p class="intro-text">Explore the true scale of global flood risk. This interactive dashboard maps 315 structurally vulnerable regions alongside 63 of the most catastrophic historical flood events in recorded history.</p>
+    <div class="header">
+      <h1>Global Flood Risk & <span class="gradient-text">Echoes of the Deep</span></h1>
+      <p class="intro-text">Explore the true scale of global flood risk. This interactive dashboard maps 315 structurally vulnerable regions alongside 63 of the most catastrophic historical flood events in recorded history.</p>
+    </div>
     
     <div class="map-wrapper">
       
@@ -224,16 +279,15 @@
 
     L.control.zoom({ position: 'topleft' }).addTo(map);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CARTO',
-      subdomains: 'abcd',
+    /* ESRI Dark Gray Base & Reference (Forces English labels globally) */
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
       maxZoom: 10,
       noWrap: true 
     }).addTo(map);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
       pane: 'shadowPane', 
-      subdomains: 'abcd',
       maxZoom: 10,
       noWrap: true
     }).addTo(map);
@@ -287,7 +341,6 @@
       { lat: 34.5, lon: 133.0, radius: 120000, name: "West Japan Floods", year: "2018", desc: "Historic rainfall in southwestern Japan caused rivers to break their banks and triggered severe landslides, killing 225." },
       { lat: 16.0, lon: 95.0, radius: 200000, name: "Cyclone Nargis Storm Surge", year: "2008", desc: "Sent a massive, deadly storm surge straight into the low-lying Irrawaddy Delta in Myanmar, killing over 138,000 people." },
       { lat: 34.7, lon: 113.6, radius: 90000, name: "Henan Floods", year: "2021", desc: "The region received a year's worth of rain in just three days, catastrophically flooding the Zhengzhou subways." },
-
       { lat: 51.6, lon: 4.0, radius: 100000, name: "North Sea Flood", year: "1953", desc: "A massive storm surge overwhelmed sea defenses in the Netherlands and the UK, killing over 2,500 people." },
       { lat: 50.5, lon: 6.5, radius: 100000, name: "Western European Floods", year: "2021", desc: "Extreme rainfall caused rivers to burst their banks, entirely devastating the Ahr valley in Germany and killing over 220." },
       { lat: 43.7, lon: 11.2, radius: 30000, name: "Flood of the Arno", year: "1966", desc: "Flooded the historic center of Florence, Italy, killing 101 people and damaging millions of priceless Renaissance masterpieces." },
@@ -301,7 +354,6 @@
       { lat: 53.5, lon: 10.0, radius: 60000, name: "North Sea Flood (Hamburg)", year: "1962", desc: "A storm surge pushed the Elbe river inland, catching Hamburg by surprise and killing 315." },
       { lat: 51.2, lon: -3.8, radius: 30000, name: "Lynmouth Flood", year: "1952", desc: "A devastating flash flood that swept through an English coastal village, killing 34." },
       { lat: 44.3, lon: 11.8, radius: 80000, name: "Emilia-Romagna Floods", year: "2023", desc: "Historic, torrential rains caused severe infrastructure damage and flooding across Northern Italy." },
-
       { lat: 33.5, lon: -91.0, radius: 250000, name: "Great Mississippi Flood", year: "1927", desc: "The most destructive river flood in US history. It inundated 27,000 square miles up to 30 feet deep." },
       { lat: 29.95, lon: -90.07, radius: 80000, name: "Hurricane Katrina Levee Failures", year: "2005", desc: "Catastrophic levee failures flooded 80% of New Orleans, trapping thousands and causing over 1,800 deaths." },
       { lat: 10.6, lon: -66.9, radius: 40000, name: "Vargas Tragedy", year: "1999", desc: "Torrential rains triggered massive flash floods and debris flows that buried coastal towns in Venezuela, leaving 10,000 to 30,000 dead." },
@@ -317,7 +369,6 @@
       { lat: 4.6, lon: -74.0, radius: 150000, name: "Colombia Floods", year: "2010", desc: "Unprecedented La Niña rains caused flooding and landslides that affected over 2 million people." },
       { lat: -30.0, lon: -51.2, radius: 250000, name: "Rio Grande do Sul Floods", year: "2024", desc: "Historic, catastrophic flooding that submerged major parts of southern Brazil, displacing millions." },
       { lat: -34.9, lon: -57.9, radius: 60000, name: "La Plata Flood", year: "2013", desc: "An extreme flash flood event in Argentina that claimed over 80 lives in a matter of hours." },
-
       { lat: 32.7, lon: 22.6, radius: 40000, name: "Derna Dam Collapses", year: "2023", desc: "Storm Daniel caused two aging dams to collapse in Libya, sending a wall of water that washed entire neighborhoods into the sea, killing over 4,000." },
       { lat: -19.8, lon: 34.8, radius: 150000, name: "Cyclone Idai", year: "2019", desc: "Created a massive 'inland ocean' in Mozambique, destroying the city of Beira and killing over 1,000 across Southern Africa." },
       { lat: -21.0, lon: 34.0, radius: 150000, name: "Mozambique Flood", year: "2000", desc: "A catastrophic disaster following Cyclone Leon-Eline that devastated southern Africa." },
@@ -325,7 +376,6 @@
       { lat: 2.0, lon: 45.0, radius: 250000, name: "Horn of Africa Floods", year: "2006", desc: "Severe unseasonal rains submerged hundreds of villages in Somalia, Kenya, and Ethiopia." },
       { lat: 15.5, lon: 32.5, radius: 100000, name: "Khartoum Floods", year: "1988", desc: "Massive floods in Sudan that left over 1 million people entirely homeless." },
       { lat: -29.8, lon: 31.0, radius: 100000, name: "KwaZulu-Natal Floods", year: "2022", desc: "The deadliest natural disaster in South Africa's history, claiming over 400 lives." },
-
       { lat: -27.5, lon: 152.0, radius: 300000, name: "Queensland Floods", year: "2010-2011", desc: "Submerged an area of Australia the size of France and Germany combined, crippling the city of Brisbane." },
       { lat: -28.0, lon: 153.0, radius: 250000, name: "Eastern Australia Floods", year: "2022", desc: "A widespread flood catastrophe across Queensland and New South Wales." },
       { lat: -27.4, lon: 153.0, radius: 80000, name: "Brisbane Flood", year: "1974", desc: "Cyclone Wanda caused the river to peak, flooding thousands of homes in the city." },
@@ -371,19 +421,19 @@
     legend.onAdd = function () {
       const div = L.DomUtil.create('div', 'map-legend');
       div.innerHTML = `
-        <strong style="font-size: 1.1em; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; display: block; margin-bottom: 10px;">Dashboard Key</strong>
+        <strong style="font-size: 1.1em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: block; margin-bottom: 12px;">Dashboard Key</strong>
         
-        <div id="legend-danger" class="legend-item" style="display: flex; align-items: center; margin-bottom: 8px;">
-          <div style="width: 16px; height: 16px; background: rgba(255, 42, 42, 0.4); border: 1.5px solid #ff4d4d; margin-right: 8px; border-radius: 2px;"></div>
+        <div id="legend-danger" class="legend-item" style="display: flex; align-items: center; margin-bottom: 10px;">
+          <div style="width: 16px; height: 16px; background: rgba(255, 42, 42, 0.4); border: 1.5px solid #ff4d4d; margin-right: 10px; border-radius: 4px;"></div>
           <span>315 Global Flood Danger Zones</span>
         </div>
         
-        <div id="legend-history" class="legend-item" style="display: flex; align-items: center; margin-bottom: 4px;">
-          <div style="width: 16px; height: 16px; background: rgba(255, 69, 0, 0.5); border: 2px solid #ff8c00; margin-right: 8px; border-radius: 50%;"></div>
+        <div id="legend-history" class="legend-item" style="display: flex; align-items: center; margin-bottom: 6px;">
+          <div style="width: 16px; height: 16px; background: rgba(255, 69, 0, 0.5); border: 2px solid #ff8c00; margin-right: 10px; border-radius: 50%;"></div>
           <span>63 Historical Catastrophe Epicenters</span>
         </div>
 
-        <em style="font-size:12px; color:#a0a0b0; display: block; margin-top: 8px;">Hover & click any zone for analytics</em>
+        <em style="font-size:0.85rem; color:var(--text-muted); display: block; margin-top: 12px; font-weight: 300;">Hover & click any zone for analytics</em>
       `;
       return div;
     };

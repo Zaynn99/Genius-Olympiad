@@ -4,96 +4,613 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Which Zones Are Most at Risk?</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --primary-blue: #4da6ff;
+      --primary-cyan: #00e5ff;
+      --primary-red: #ff4d4d;
+      --primary-orange: #ff8c00;
+      --text-main: #f1f1f1;
+      --text-muted: #9ba1a6;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+    }
+
     body {
-      background: radial-gradient(circle at top left, #1a1a2e, #121212);
-      background-color: #121212;
-      color: #f1f1f1;
-      font-family: Arial, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(77, 166, 255, 0.08), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(0, 229, 255, 0.05), transparent 25%);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
       margin: 0;
-      padding: 60px;
+      padding: 0;
       min-height: 100vh;
       box-sizing: border-box;
     }
+
     .container {
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
+      padding: 40px 20px;
+      position: relative;
     }
+
     .back-btn {
       position: absolute;
       top: 40px;
-      left: 40px;
-      padding: 12px 24px;
+      left: 20px;
+      padding: 10px 24px;
       border-radius: 50px;
-      background-color: rgba(30, 30, 30, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      color: #e0e0e0;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
       text-decoration: none;
-      font-size: 1rem;
-      font-weight: bold;
+      font-size: 0.95rem;
+      font-weight: 500;
       display: flex;
       align-items: center;
       transition: all 0.3s ease;
+      z-index: 1000;
     }
+
     .back-btn:hover {
-      background-color: rgba(42, 42, 42, 0.9);
-      color: #4da6ff;
-      border-color: #4da6ff;
+      background: rgba(77, 166, 255, 0.1);
+      color: var(--primary-blue);
+      border-color: rgba(77, 166, 255, 0.4);
       transform: translateX(-5px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-top: 60px;
+    }
+
     h1 {
-      font-size: 3.5rem;
-      margin-top: 0;
-      background: -webkit-linear-gradient(#ffffff, #4da6ff);
+      font-size: clamp(2.5rem, 4vw, 3.5rem);
+      margin: 0 0 15px 0;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, var(--primary-blue) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    p {
-      font-size: 1.2rem;
+
+    p.intro {
+      font-size: 1.1rem;
       line-height: 1.6;
-      color: #cccccc;
+      color: var(--text-muted);
+      font-weight: 300;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 40px auto;
     }
 
-    .content-section {
-      margin-top: 40px;
-      display: flex;
-      flex-direction: column;
+    .search-container {
+      max-width: 600px;
+      margin: 0 auto 40px auto;
+      position: relative;
+      z-index: 500;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 18px 25px;
+      font-size: 1.1rem;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 400;
+      border-radius: 50px;
+      border: 1px solid var(--card-border);
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--text-main);
+      outline: none;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .search-input::placeholder {
+      color: #666;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-cyan);
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.2);
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .search-input.active-dropdown {
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+    }
+
+    .search-suggestions {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: rgba(15, 15, 20, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      max-height: 250px;
+      overflow-y: auto;
+      display: none;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .suggestion-item {
+      padding: 15px 25px;
+      cursor: pointer;
+      color: var(--text-main);
+      font-size: 1.05rem;
+      border-bottom: 1px solid var(--card-border);
+      transition: all 0.2s ease;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background: rgba(77, 166, 255, 0.1);
+      color: var(--primary-cyan);
+      padding-left: 30px;
+    }
+
+    #search-result {
+      display: none;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--primary-blue);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeIn 0.4s ease-in-out;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 0 20px rgba(77, 166, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(-10px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+    
+    .result-country { 
+      font-size: 2.5rem; 
+      margin: 0 0 10px 0; 
+      color: #fff; 
+      font-weight: 700;
+    }
+    .result-stat { 
+      font-size: 1.8rem; 
+      font-weight: 600; 
+      color: var(--primary-cyan); 
+      margin: 0 0 10px 0; 
+    }
+    .result-subtext { 
+      color: var(--text-muted); 
+      font-size: 1.1rem; 
+      margin: 0; 
+      font-weight: 300;
+    }
+    .result-subtext strong {
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 40px;
     }
-    .chart-container {
-      background-color: rgba(30, 30, 30, 0.4);
-      padding: 25px;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+    .chart-card {
+      background-color: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 35px 30px;
+      border-radius: 24px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-card h2 {
       text-align: center;
+      margin: 0 0 8px 0;
+      color: var(--text-main);
+      font-size: 1.5rem;
+      font-weight: 600;
     }
-    .chart-container img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
+
+    .chart-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 300;
+      margin-bottom: 30px;
     }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 60vh; 
+      min-height: 400px;
+      max-height: 700px;
+    }
+    .canvas-wrapper.small {
+      height: 40vh;
+      min-height: 300px;
+    }
+
   </style>
 </head>
 <body>
+  
   <div class="container">
-    <a href="Main.html" class="back-btn">← Back to Home</a>
-    <h1>Which Zones Are Most at Risk?</h1>
+    <a href="Main.html" class="back-btn">← Back</a>
     
-    <div class="content-section">
-      <p>Explore the estimated percentage of populations exposed to severe flood risks and their primary drivers across the most vulnerable nations.</p>
-
-      <div class="chart-container">
-        <img src="population_affected.png" alt="Bar chart showing the percentage of population exposed to severe flood risk by country">
-      </div>
-
-      <div class="chart-container">
-        <img src="flood_causes.png" alt="Visual graphic mapping countries to their primary causes of flood risk">
-      </div>
+    <div class="header">
+      <h1>Global Flood <span class="gradient-text">Vulnerability</span></h1>
+      <p class="intro">Search for any country on Earth to see its flood risk profile, or explore the global datasets below detailing population exposure and threat vectors.</p>
     </div>
 
+    <div class="search-container">
+      <input type="text" id="countrySearch" class="search-input" placeholder="Search for a country (e.g., Japan, Maldives, USA)..." autocomplete="off">
+      <div id="search-suggestions" class="search-suggestions"></div>
+    </div>
+
+    <div id="search-result">
+      <h2 class="result-country" id="res-name">Country Name</h2>
+      <p class="result-stat"><span id="res-exposure">0</span>% of Population Exposed</p>
+      <p class="result-subtext">Primary Threat: <strong id="res-threat">Unknown</strong></p>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="chart-card">
+        <h2>Highest Population Exposure</h2>
+        <div class="chart-subtitle">Top 25 nations by percentage of population living in severe flood zones.</div>
+        <div class="canvas-wrapper">
+          <canvas id="exposureChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h2>Primary Threat Vectors by Region</h2>
+        <div class="chart-subtitle">Millions of people exposed to Fluvial (River), Pluvial (Rain), and Coastal flooding.</div>
+        <div class="canvas-wrapper small">
+          <canvas id="causesChart"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    const globalFloodData = {
+      "united states": { exposure: 12.0, threat: "Coastal Hurricanes & Riverine (Fluvial)" },
+      "usa": { exposure: 12.0, threat: "Coastal Hurricanes & Riverine (Fluvial)" },
+      "canada": { exposure: 7.2, threat: "Fluvial (Spring Thaw) & Pluvial" },
+      "mexico": { exposure: 11.5, threat: "Coastal Hurricanes & Pluvial" },
+      "cuba": { exposure: 18.4, threat: "Coastal Surge (Hurricanes)" },
+      "haiti": { exposure: 21.0, threat: "Coastal Storms & Flash Floods" },
+      "dominican republic": { exposure: 15.5, threat: "Coastal & Pluvial" },
+      "jamaica": { exposure: 14.2, threat: "Coastal Surge & Pluvial" },
+      "bahamas": { exposure: 52.0, threat: "Coastal Surge (Extreme)" },
+      "guatemala": { exposure: 12.5, threat: "Pluvial & Mudslides" },
+      "honduras": { exposure: 16.0, threat: "Coastal Hurricanes & Fluvial" },
+      "el salvador": { exposure: 10.5, threat: "Pluvial & Fluvial" },
+      "nicaragua": { exposure: 14.0, threat: "Coastal Hurricanes" },
+      "costa rica": { exposure: 8.5, threat: "Pluvial & Fluvial" },
+      "panama": { exposure: 11.0, threat: "Coastal & Fluvial" },
+      "barbados": { exposure: 22.0, threat: "Coastal Surge" },
+      "trinidad and tobago": { exposure: 15.0, threat: "Coastal & Pluvial" },
+
+      "brazil": { exposure: 22.0, threat: "Fluvial (Amazon) & Urban Pluvial" },
+      "colombia": { exposure: 21.0, threat: "Fluvial & Flash Floods" },
+      "argentina": { exposure: 14.5, threat: "Fluvial (Parana River) & Pluvial" },
+      "peru": { exposure: 13.0, threat: "Fluvial (El Nino driven) & Mudslides" },
+      "venezuela": { exposure: 18.5, threat: "Coastal & Fluvial (Orinoco)" },
+      "chile": { exposure: 6.5, threat: "Coastal Tsunamis & Pluvial" },
+      "ecuador": { exposure: 16.0, threat: "Coastal & Fluvial (El Nino)" },
+      "bolivia": { exposure: 11.5, threat: "Fluvial (Amazon Basin)" },
+      "paraguay": { exposure: 17.0, threat: "Fluvial (Paraguay River)" },
+      "uruguay": { exposure: 10.0, threat: "Coastal & Fluvial" },
+      "guyana": { exposure: 37.9, threat: "Coastal Surge (Below Sea Level)" },
+      "suriname": { exposure: 37.6, threat: "Coastal Surge" },
+
+      "netherlands": { exposure: 58.7, threat: "Coastal Surge & Fluvial (Rhine)" },
+      "united kingdom": { exposure: 8.5, threat: "Pluvial (Surface Water) & Coastal" },
+      "uk": { exposure: 8.5, threat: "Pluvial (Surface Water) & Coastal" },
+      "germany": { exposure: 8.1, threat: "Fluvial (Rhine/Elbe) & Pluvial" },
+      "france": { exposure: 7.5, threat: "Fluvial (Seine/Loire) & Coastal" },
+      "italy": { exposure: 9.2, threat: "Fluvial (Po River) & Flash Floods" },
+      "spain": { exposure: 6.5, threat: "Coastal & Pluvial Flash Floods" },
+      "belgium": { exposure: 14.5, threat: "Fluvial & Coastal" },
+      "switzerland": { exposure: 5.0, threat: "Fluvial (Alpine Melt)" },
+      "austria": { exposure: 6.2, threat: "Fluvial (Danube)" },
+      "poland": { exposure: 9.0, threat: "Fluvial (Vistula/Oder)" },
+      "russia": { exposure: 5.5, threat: "Fluvial (Spring Ice Jams)" },
+      "ukraine": { exposure: 7.0, threat: "Fluvial (Dnieper) & Coastal" },
+      "sweden": { exposure: 4.5, threat: "Fluvial & Coastal" },
+      "norway": { exposure: 3.5, threat: "Coastal & Pluvial" },
+      "denmark": { exposure: 18.0, threat: "Coastal Surge" },
+      "finland": { exposure: 3.0, threat: "Fluvial & Snowmelt" },
+      "ireland": { exposure: 7.5, threat: "Fluvial & Coastal" },
+      "portugal": { exposure: 5.5, threat: "Coastal & Fluvial" },
+      "greece": { exposure: 4.8, threat: "Pluvial Flash Floods" },
+      "romania": { exposure: 12.5, threat: "Fluvial (Danube)" },
+      "hungary": { exposure: 15.0, threat: "Fluvial (Danube)" },
+      "czech republic": { exposure: 8.0, threat: "Fluvial (Elbe/Vltava)" },
+      "serbia": { exposure: 11.5, threat: "Fluvial (Danube/Sava)" },
+      "croatia": { exposure: 8.5, threat: "Fluvial & Coastal" },
+      "bulgaria": { exposure: 9.0, threat: "Fluvial & Pluvial" },
+      "slovakia": { exposure: 7.5, threat: "Fluvial (Danube)" },
+      "belarus": { exposure: 6.0, threat: "Fluvial" },
+      "lithuania": { exposure: 4.5, threat: "Fluvial" },
+      "latvia": { exposure: 5.0, threat: "Fluvial (Daugava)" },
+      "estonia": { exposure: 4.0, threat: "Coastal & Fluvial" },
+      "iceland": { exposure: 2.5, threat: "Glacial Outbursts (Jökulhlaup)" },
+
+      "bangladesh": { exposure: 57.5, threat: "Fluvial & Coastal Surge" },
+      "vietnam": { exposure: 46.0, threat: "Fluvial (Mekong/Red River) & Pluvial" },
+      "myanmar": { exposure: 39.9, threat: "Fluvial & Coastal Cyclone" },
+      "laos": { exposure: 39.8, threat: "Fluvial (Mekong Basin)" },
+      "cambodia": { exposure: 38.0, threat: "Fluvial (Mekong Basin)" },
+      "iraq": { exposure: 36.5, threat: "Fluvial (Tigris/Euphrates)" },
+      "thailand": { exposure: 33.1, threat: "Fluvial & Pluvial" },
+      "pakistan": { exposure: 31.0, threat: "Fluvial (Indus River Basin)" },
+      "india": { exposure: 27.5, threat: "Fluvial, Pluvial & Coastal" },
+      "china": { exposure: 27.0, threat: "Fluvial (Yangtze/Yellow) & Pluvial" },
+      "indonesia": { exposure: 19.5, threat: "Coastal Subsidence & Pluvial" },
+      "japan": { exposure: 15.5, threat: "Pluvial (Typhoons) & Coastal Tsunamis" },
+      "philippines": { exposure: 14.8, threat: "Coastal Typhoons & Pluvial" },
+      "south korea": { exposure: 9.5, threat: "Pluvial (Typhoons) & Fluvial" },
+      "north korea": { exposure: 14.0, threat: "Fluvial & Pluvial" },
+      "malaysia": { exposure: 12.5, threat: "Fluvial (Monsoon) & Pluvial" },
+      "singapore": { exposure: 8.5, threat: "Coastal & Urban Pluvial" },
+      "taiwan": { exposure: 13.0, threat: "Pluvial (Typhoons) & Coastal" },
+      "sri lanka": { exposure: 16.5, threat: "Fluvial & Pluvial (Monsoon)" },
+      "nepal": { exposure: 18.5, threat: "Fluvial & Glacial Lake Outbursts" },
+      "bhutan": { exposure: 12.0, threat: "Fluvial & Glacial Lake Outbursts" },
+      "afghanistan": { exposure: 15.0, threat: "Flash Floods & Snowmelt" },
+      "iran": { exposure: 11.5, threat: "Flash Floods (Pluvial)" },
+      "saudi arabia": { exposure: 4.5, threat: "Pluvial Flash Floods" },
+      "yemen": { exposure: 9.0, threat: "Pluvial Flash Floods" },
+      "oman": { exposure: 5.5, threat: "Coastal Cyclones & Flash Floods" },
+      "uae": { exposure: 3.5, threat: "Urban Pluvial & Coastal" },
+      "united arab emirates": { exposure: 3.5, threat: "Urban Pluvial & Coastal" },
+      "israel": { exposure: 4.0, threat: "Coastal & Flash Floods" },
+      "syria": { exposure: 6.5, threat: "Fluvial (Euphrates)" },
+      "jordan": { exposure: 3.0, threat: "Flash Floods" },
+      "lebanon": { exposure: 4.5, threat: "Pluvial & Coastal" },
+      "turkey": { exposure: 7.5, threat: "Pluvial & Fluvial" },
+      "kazakhstan": { exposure: 5.5, threat: "Fluvial (Spring Melt)" },
+      "uzbekistan": { exposure: 6.0, threat: "Fluvial & Mudflows" },
+      "maldives": { exposure: 99.0, threat: "Coastal Surge (Sea Level Rise)" },
+
+      "egypt": { exposure: 40.5, threat: "Coastal & Fluvial (Nile Delta)" },
+      "somalia": { exposure: 28.5, threat: "Fluvial & Pluvial Flash Floods" },
+      "sudan": { exposure: 28.0, threat: "Fluvial (Nile Basin)" },
+      "chad": { exposure: 25.0, threat: "Pluvial Flash Flooding" },
+      "south sudan": { exposure: 24.5, threat: "Fluvial (White Nile)" },
+      "nigeria": { exposure: 18.0, threat: "Fluvial (Niger River) & Pluvial" },
+      "democratic republic of the congo": { exposure: 14.5, threat: "Fluvial (Congo River)" },
+      "congo": { exposure: 12.0, threat: "Fluvial" },
+      "south africa": { exposure: 8.5, threat: "Pluvial & Coastal" },
+      "kenya": { exposure: 11.0, threat: "Fluvial & Pluvial" },
+      "ethiopia": { exposure: 9.5, threat: "Fluvial & Pluvial" },
+      "ghana": { exposure: 13.0, threat: "Coastal & Urban Pluvial" },
+      "morocco": { exposure: 7.5, threat: "Pluvial Flash Floods" },
+      "algeria": { exposure: 5.5, threat: "Pluvial Flash Floods" },
+      "tunisia": { exposure: 6.0, threat: "Coastal & Flash Floods" },
+      "libya": { exposure: 4.0, threat: "Coastal Storms (e.g. Daniel) & Pluvial" },
+      "mali": { exposure: 15.5, threat: "Fluvial (Niger Inland Delta)" },
+      "senegal": { exposure: 16.0, threat: "Coastal & Fluvial" },
+      "cameroon": { exposure: 12.5, threat: "Fluvial & Coastal" },
+      "ivory coast": { exposure: 14.0, threat: "Coastal & Urban Pluvial" },
+      "cote d'ivoire": { exposure: 14.0, threat: "Coastal & Urban Pluvial" },
+      "uganda": { exposure: 10.5, threat: "Fluvial & Pluvial" },
+      "tanzania": { exposure: 11.5, threat: "Fluvial & Coastal" },
+      "mozambique": { exposure: 22.0, threat: "Coastal Cyclones & Fluvial" },
+      "madagascar": { exposure: 19.5, threat: "Coastal Cyclones & Fluvial" },
+      "zambia": { exposure: 13.0, threat: "Fluvial (Zambezi)" },
+      "zimbabwe": { exposure: 9.0, threat: "Fluvial & Pluvial" },
+      "angola": { exposure: 10.0, threat: "Pluvial & Fluvial" },
+      "namibia": { exposure: 5.0, threat: "Fluvial (Cuvelai Basin)" },
+      "botswana": { exposure: 4.5, threat: "Fluvial (Okavango)" },
+      "rwanda": { exposure: 8.0, threat: "Pluvial & Mudslides" },
+      "burundi": { exposure: 9.5, threat: "Fluvial (Lake Tanganyika)" },
+      "malawi": { exposure: 14.0, threat: "Fluvial & Cyclones" },
+
+      "australia": { exposure: 6.8, threat: "Fluvial & Pluvial (Extreme Rain Events)" },
+      "new zealand": { exposure: 7.5, threat: "Fluvial & Coastal" },
+      "papua new guinea": { exposure: 12.0, threat: "Coastal & Fluvial" },
+      "fiji": { exposure: 26.0, threat: "Coastal Cyclones & Fluvial" },
+      "solomon islands": { exposure: 24.5, threat: "Coastal & Pluvial" },
+      "vanuatu": { exposure: 32.0, threat: "Coastal Cyclones & Tsunamis" },
+      "samoa": { exposure: 21.0, threat: "Coastal & Pluvial" },
+      "tonga": { exposure: 25.0, threat: "Coastal Surge & Tsunamis" },
+      "kiribati": { exposure: 95.0, threat: "Coastal Surge (Sea Level Rise)" },
+      "tuvalu": { exposure: 98.0, threat: "Coastal Surge (Sea Level Rise)" },
+      "marshall islands": { exposure: 96.0, threat: "Coastal Surge (Sea Level Rise)" },
+      "micronesia": { exposure: 35.0, threat: "Coastal Typhoons" },
+      "palau": { exposure: 28.0, threat: "Coastal Surge & Typhoons" }
+    };
+
+    const searchInput = document.getElementById('countrySearch');
+    const suggestionsBox = document.getElementById('search-suggestions');
+    const resultCard = document.getElementById('search-result');
+    const resName = document.getElementById('res-name');
+    const resExposure = document.getElementById('res-exposure');
+    const resThreat = document.getElementById('res-threat');
+
+    function formatName(name) {
+      if(name === "usa" || name === "uk" || name === "uae") return name.toUpperCase();
+      return name.replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase().trim();
+      suggestionsBox.innerHTML = ''; 
+      
+      if (query === '') {
+        suggestionsBox.style.display = 'none';
+        searchInput.classList.remove('active-dropdown');
+        return;
+      }
+
+      const matches = Object.keys(globalFloodData).filter(country => country.includes(query));
+
+      if (matches.length > 0) {
+        suggestionsBox.style.display = 'block';
+        searchInput.classList.add('active-dropdown'); 
+
+        matches.forEach(match => {
+          const div = document.createElement('div');
+          div.className = 'suggestion-item';
+          div.textContent = formatName(match);
+          
+          div.onclick = function() {
+            selectCountry(match);
+          };
+          suggestionsBox.appendChild(div);
+        });
+      } else {
+        suggestionsBox.style.display = 'none';
+        searchInput.classList.remove('active-dropdown');
+      }
+    });
+
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        const query = e.target.value.toLowerCase().trim();
+        if (globalFloodData[query]) {
+          selectCountry(query);
+        } else {
+          const matches = Object.keys(globalFloodData).filter(c => c.includes(query));
+          if(matches.length > 0) {
+            selectCountry(matches[0]);
+          }
+        }
+      }
+    });
+
+    function selectCountry(countryKey) {
+      const data = globalFloodData[countryKey];
+      searchInput.value = formatName(countryKey);
+      
+      suggestionsBox.style.display = 'none';
+      searchInput.classList.remove('active-dropdown');
+
+      resName.textContent = formatName(countryKey);
+      resExposure.textContent = data.exposure.toFixed(1);
+      resThreat.textContent = data.threat;
+      
+      resultCard.style.display = 'block';
+      
+      // Dynamic Glassmorphism colors based on threat level
+      if(data.exposure > 40) {
+        resultCard.style.borderColor = '#ff4d4d';
+        resultCard.style.boxShadow = '0 20px 40px rgba(0,0,0,0.4), inset 0 0 20px rgba(255, 77, 77, 0.1)';
+        resExposure.style.color = '#ff4d4d';
+      } else if(data.exposure > 20) {
+        resultCard.style.borderColor = '#ff8c00';
+        resultCard.style.boxShadow = '0 20px 40px rgba(0,0,0,0.4), inset 0 0 20px rgba(255, 140, 0, 0.1)';
+        resExposure.style.color = '#ff8c00';
+      } else {
+        resultCard.style.borderColor = '#00e5ff';
+        resultCard.style.boxShadow = '0 20px 40px rgba(0,0,0,0.4), inset 0 0 20px rgba(0, 229, 255, 0.1)';
+        resExposure.style.color = '#00e5ff';
+      }
+    }
+
+    // Chart.js Setup
+    Chart.defaults.color = '#9ba1a6';
+    Chart.defaults.font.family = "'Outfit', sans-serif";
+    Chart.defaults.font.size = 13;
+    Chart.defaults.scale.grid.color = 'rgba(255, 255, 255, 0.08)';
+
+    const ctxExposure = document.getElementById('exposureChart').getContext('2d');
+    new Chart(ctxExposure, {
+      type: 'bar',
+      data: {
+        labels: [
+          'Netherlands', 'Bangladesh', 'Vietnam', 'Egypt', 'Myanmar', 
+          'Laos', 'Cambodia', 'Guyana', 'Suriname', 'Iraq', 
+          'Thailand', 'Pakistan', 'Somalia', 'Sudan', 'India', 
+          'China', 'Chad', 'South Sudan', 'Brazil', 'Colombia',
+          'Indonesia', 'Nigeria', 'Japan', 'United States', 'Global Avg'
+        ],
+        datasets: [{
+          label: '% Exposed',
+          data: [58.7, 57.5, 46.0, 40.5, 39.9, 39.8, 38.0, 37.9, 37.6, 36.5, 33.1, 31.0, 28.5, 28.0, 27.5, 27.0, 25.0, 24.5, 22.0, 21.0, 19.5, 18.0, 15.5, 12.0, 23.0],
+          backgroundColor: ctx => {
+            const val = ctx.raw;
+            if (val > 40) return 'rgba(255, 77, 77, 0.85)';
+            if (val > 25) return 'rgba(255, 140, 0, 0.85)';
+            if (val === 23.0) return 'rgba(0, 229, 255, 0.85)';
+            return 'rgba(77, 166, 255, 0.85)';
+          },
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y', 
+        responsive: true,
+        maintainAspectRatio: false, 
+        plugins: {
+          legend: { display: false },
+          tooltip: { padding: 12, cornerRadius: 8, callbacks: { label: ctx => ctx.raw + '% exposed' } }
+        },
+        scales: {
+          x: { max: 65, title: { display: true, text: 'Percentage of Population (%)' } },
+          y: { ticks: { autoSkip: false } } 
+        }
+      }
+    });
+
+    const ctxCauses = document.getElementById('causesChart').getContext('2d');
+    new Chart(ctxCauses, {
+      type: 'bar',
+      data: {
+        labels: ['South Asia', 'East Asia', 'Africa', 'Americas', 'Europe'],
+        datasets: [
+          { label: 'River Overflow', data: [520, 410, 160, 85, 55], backgroundColor: 'rgba(0, 229, 255, 0.85)' },
+          { label: 'Extreme Rain', data: [260, 210, 105, 65, 45], backgroundColor: 'rgba(77, 166, 255, 0.85)' },
+          { label: 'Coastal Surge', data: [140, 190, 35, 45, 25], backgroundColor: 'rgba(255, 140, 0, 0.85)' }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false, 
+        plugins: {
+          legend: { position: 'top', labels: { color: '#f1f1f1', padding: 20 } },
+          tooltip: { padding: 12, cornerRadius: 8 }
+        },
+        scales: {
+          x: { stacked: true, grid: { display: false } },
+          y: { stacked: true, title: { display: true, text: 'People Exposed (Millions)' } }
+        }
+      }
+    });
+  </script>
 </body>
 </html>
