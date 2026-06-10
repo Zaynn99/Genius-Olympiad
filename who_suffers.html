@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Tech Front: AI & Engineering</title>
+  <title>Which Zones Are Most at Risk?</title>
   <style>
     body {
       background: radial-gradient(circle at top left, #1a1a2e, #121212);
@@ -20,18 +20,14 @@
       margin: 0 auto;
     }
     .back-btn {
-      
       position: absolute;
       top: 40px;
       left: 40px;
-      
       padding: 12px 24px;
       border-radius: 50px;
-      
       background-color: rgba(30, 30, 30, 0.6);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      
       color: #e0e0e0;
       text-decoration: none;
       font-size: 1rem;
@@ -40,15 +36,13 @@
       align-items: center;
       transition: all 0.3s ease;
     }
-
     .back-btn:hover {
       background-color: rgba(42, 42, 42, 0.9);
       color: #4da6ff;
       border-color: #4da6ff;
-      transform: translateX(-5px); 
+      transform: translateX(-5px);
       box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     }
-
     h1 {
       font-size: 3.5rem;
       margin-top: 0;
@@ -61,10 +55,45 @@
       line-height: 1.6;
       color: #cccccc;
     }
+
+    .content-section {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    .chart-container {
+      background-color: rgba(30, 30, 30, 0.4);
+      padding: 25px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    .chart-container img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <a href="Main.html" class="back-btn">← Back to Home</a>
-    <h1>The Tech Front: AI & Engineering</h1>
+    <h1>Which Zones Are Most at Risk?</h1>
+    
+    <div class="content-section">
+      <p>Explore the estimated percentage of populations exposed to severe flood risks and their primary drivers across the most vulnerable nations.</p>
+
+      <div class="chart-container">
+        <img src="population_affected.png" alt="Bar chart showing the percentage of population exposed to severe flood risk by country">
+      </div>
+
+      <div class="chart-container">
+        <img src="flood_causes.png" alt="Visual graphic mapping countries to their primary causes of flood risk">
+      </div>
+    </div>
+
+  </div>
+</body>
 </html>

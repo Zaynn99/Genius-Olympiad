@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Tech Front: AI & Engineering</title>
+  <style>
+    body {
+      background: radial-gradient(circle at top center, #1e1e2f, #0b0b10);
+      background-color: #0b0b10;
+      color: #f1f1f1;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .back-btn {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 10px 20px;
+      border-radius: 50px;
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #aaa;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      background-color: rgba(0, 229, 255, 0.1);
+      color: #00e5ff;
+      border-color: #00e5ff;
+      transform: translateX(-5px);
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-top: 50px;
+    }
+    h1 {
+      font-size: 3rem;
+      margin: 0 0 10px 0;
+      background: -webkit-linear-gradient(#ffffff, #00e5ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -1px;
+    }
+    p.subtitle {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #999;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .dashboard {
+      background-color: rgba(20, 20, 25, 0.7);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(25px);
+    }
+
+    .toolbar-container {
+      background-color: rgba(0, 0, 0, 0.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .tool-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .tool-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #777;
+      font-weight: bold;
+      width: 100px;
+      text-align: right;
+    }
+
+    .brush-btn, .size-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      color: #bbb;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .brush-btn:hover, .size-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .brush-btn.active, .size-btn.active {
+      background: rgba(0, 229, 255, 0.15);
+      border-color: rgba(0, 229, 255, 0.5);
+      color: #00e5ff;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+    }
+    .color-box {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+    }
+
+    .canvas-wrapper {
+      padding: 30px;
+      display: flex;
+      justify-content: center;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.01),
+        rgba(255, 255, 255, 0.01) 10px,
+        transparent 10px,
+        transparent 20px
+      );
+    }
+    canvas {
+      background-color: #08080c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      cursor: crosshair;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.9), 0 0 0 1px rgba(0, 229, 255, 0.1);
+      max-width: 100%;
+    }
+
+    .action-bar {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .status-text {
+      font-size: 0.9rem;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #444;
+      transition: background 0.3s;
+    }
+    .status-dot.active {
+      background: #00e5ff;
+      box-shadow: 0 0 10px #00e5ff;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+    }
+
+    .action-btn {
+      padding: 12px 28px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+    }
+    .btn-primary {
+      background-color: #00e5ff;
+      color: #000;
+      box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
+    }
+    .btn-primary:hover {
+      background-color: #fff;
+      box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background-color: transparent;
+      color: #ff4d4d;
+      border: 1px solid rgba(255, 77, 77, 0.3);
+    }
+    .btn-secondary:hover {
+      background-color: rgba(255, 77, 77, 0.1);
+      border-color: #ff4d4d;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="Main.html" class="back-btn">← Back</a>
+    
+    <div class="header">
+      <h1>Advanced Flood Simulator</h1>
+      <p class="subtitle">Design your topography, set your water sources, and trigger the simulation. Observe how different soil permeability and elevations alter the path of destruction.</p>
+    </div>
+    
+    <div class="dashboard">
+      
+      <div class="toolbar-container">
+        <div class="tool-section">
+          <div class="tool-label">Tools</div>
+          <button class="size-btn active" data-size="0">Small</button>
+          <button class="size-btn" data-size="1">Medium</button>
+          <button class="size-btn" data-size="2">Large</button>
+          
+          <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 10px;"></div>
+          
+          <button class="brush-btn active" data-brush="water">
+            <div class="color-box" style="background: #00e5ff; box-shadow: 0 0 8px #00e5ff;"></div> Water Source
+          </button>
+          <button class="brush-btn" data-brush="city">
+            <div class="color-box" style="background: #363645;"></div> City (Concrete)
+          </button>
+        </div>
+
+        <div class="tool-section">
+          <div class="tool-label">Topography</div>
+          <button class="brush-btn" data-brush="valley">
+            <div class="color-box" style="background: #05080c;"></div> Deep Valley
+          </button>
+          <button class="brush-btn" data-brush="soil">
+            <div class="color-box" style="background: #151815;"></div> Plains (Default)
+          </button>
+          <button class="brush-btn" data-brush="sand">
+            <div class="color-box" style="background: #2a2820;"></div> Sandy Soil
+          </button>
+          <button class="brush-btn" data-brush="clay">
+            <div class="color-box" style="background: #2a1f1a;"></div> Clay Soil
+          </button>
+          <button class="brush-btn" data-brush="hill">
+            <div class="color-box" style="background: #4a4a5e;"></div> Foothills
+          </button>
+          <button class="brush-btn" data-brush="mountain">
+            <div class="color-box" style="background: #6a6a82;"></div> Mountain Barrier
+          </button>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="floodCanvas" width="960" height="510"></canvas>
+      </div>
+      
+      <div class="action-bar">
+        <div class="status-text">
+          <div class="status-dot" id="statusIndicator"></div>
+          <span id="statusMessage">Awaiting simulation data... Paint on the grid to begin.</span>
+        </div>
+        
+        <div class="btn-group">
+          <button class="action-btn btn-secondary" id="clearBtn">Clear Map</button>
+          <button class="action-btn btn-primary" id="startBtn">Simulate Spread</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('floodCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const cols = 64;
+    const rows = 34;
+    const cellSize = canvas.width / cols; 
+    
+    let terrain = []; 
+    let water = []; 
+    
+    let isSimulating = false;
+    let isDrawing = false;
+    let timer;
+    let currentBrush = 'water';
+    let brushRadius = 0; 
+
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusMessage = document.getElementById('statusMessage');
+    const startBtn = document.getElementById('startBtn');
+
+    const brushBtns = document.querySelectorAll('.brush-btn');
+    brushBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        brushBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentBrush = btn.dataset.brush;
+      });
+    });
+
+    const sizeBtns = document.querySelectorAll('.size-btn');
+    sizeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        sizeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        brushRadius = parseInt(btn.dataset.size);
+      });
+    });
+
+    function clearMap() {
+      terrain = Array(cols).fill().map(() => Array(rows).fill(1)); 
+      water = Array(cols).fill().map(() => Array(rows).fill(0));   
+      drawGrid();
+      updateStatus("Map cleared. Ready for input.", false);
+    }
+
+    function updateStatus(msg, isRunning) {
+      statusMessage.innerText = msg;
+      if (isRunning) {
+        statusIndicator.classList.add('active');
+        startBtn.innerText = "Pause Simulation";
+      } else {
+        statusIndicator.classList.remove('active');
+        startBtn.innerText = "Simulate Spread";
+      }
+    }
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          
+          if (terrain[i][j] === 0) ctx.fillStyle = '#05080c'; 
+          else if (terrain[i][j] === 1) ctx.fillStyle = '#151815'; 
+          else if (terrain[i][j] === 2) ctx.fillStyle = '#363645'; 
+          else if (terrain[i][j] === 3) ctx.fillStyle = '#6a6a82'; 
+          else if (terrain[i][j] === 4) ctx.fillStyle = '#2a2820'; 
+          else if (terrain[i][j] === 5) ctx.fillStyle = '#2a1f1a'; 
+          else if (terrain[i][j] === 6) ctx.fillStyle = '#4a4a5e'; 
+
+          if (water[i][j] === 1) {
+            ctx.fillStyle = '#00e5ff'; 
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(0, 229, 255, 0.6)';
+          } else {
+            ctx.shadowBlur = 0;
+          }
+          
+          ctx.fillRect(i * cellSize, j * cellSize, cellSize - 1, cellSize - 1);
+          
+          if (terrain[i][j] === 2 && water[i][j] === 0) {
+            ctx.fillStyle = '#4a4a5c';
+            ctx.fillRect(i * cellSize + 2, j * cellSize + 2, cellSize - 5, cellSize - 5);
+          }
+        }
+      }
+      ctx.shadowBlur = 0; 
+    }
+
+    function paint(event) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (event.clientX - rect.left) * scaleX;
+      const y = (event.clientY - rect.top) * scaleY;
+
+      const centerCol = Math.floor(x / cellSize);
+      const centerRow = Math.floor(y / cellSize);
+      
+      for(let dx = -brushRadius; dx <= brushRadius; dx++) {
+        for(let dy = -brushRadius; dy <= brushRadius; dy++) {
+          let col = centerCol + dx;
+          let row = centerRow + dy;
+
+          if (col >= 0 && col < cols && row >= 0 && row < rows) {
+            if (currentBrush === 'water' && terrain[col][row] !== 3) {
+              water[col][row] = 1; 
+            } else if (currentBrush === 'soil') {
+              terrain[col][row] = 1; water[col][row] = 0;
+            } else if (currentBrush === 'city') {
+              terrain[col][row] = 2; water[col][row] = 0;
+            } else if (currentBrush === 'valley') {
+              terrain[col][row] = 0; water[col][row] = 0;
+            } else if (currentBrush === 'mountain') {
+              terrain[col][row] = 3; water[col][row] = 0;
+            } else if (currentBrush === 'sand') {
+              terrain[col][row] = 4; water[col][row] = 0;
+            } else if (currentBrush === 'clay') {
+              terrain[col][row] = 5; water[col][row] = 0;
+            } else if (currentBrush === 'hill') {
+              terrain[col][row] = 6; water[col][row] = 0;
+            }
+          }
+        }
+      }
+      drawGrid(); 
+    }
+
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; paint(e); });
+    canvas.addEventListener('mousemove', (e) => { if (isDrawing) paint(e); });
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseleave', () => isDrawing = false);
+
+    function stepSimulation() {
+      let nextWater = Array(cols).fill().map(() => Array(rows).fill(0));
+      let waterSpread = false; 
+
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          if (water[i][j] === 1) {
+            nextWater[i][j] = 1; 
+            
+            const neighbors = [[i-1, j], [i+1, j], [i, j-1], [i, j+1]];
+            
+            for (let n of neighbors) {
+              let ni = n[0], nj = n[1];
+              
+              if (ni >= 0 && ni < cols && nj >= 0 && nj < rows) {
+                if (water[ni][nj] === 0 && terrain[ni][nj] !== 3) { 
+                  
+                  let spreadChance = 1.0; 
+
+                  if (terrain[ni][nj] === 1) spreadChance = 0.5;       
+                  else if (terrain[ni][nj] === 4) spreadChance = 0.08; 
+                  else if (terrain[ni][nj] === 5) spreadChance = 0.25; 
+                  else if (terrain[ni][nj] === 6) spreadChance = 0.15; 
+
+                  if (Math.random() < spreadChance) { 
+                    nextWater[ni][nj] = 1;
+                    waterSpread = true;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      water = nextWater;
+      drawGrid();
+
+      if (!waterSpread) {
+        clearInterval(timer);
+        isSimulating = false;
+        updateStatus("Simulation complete. Maximum flood level reached.", false);
+        startBtn.innerText = "Simulation Complete";
+      }
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (startBtn.innerText === "Simulation Complete") return;
+
+      if (!isSimulating) {
+        isSimulating = true;
+        updateStatus("Calculating spread physics...", true);
+        timer = setInterval(stepSimulation, 200); 
+      } else {
+        clearInterval(timer);
+        isSimulating = false;
+        updateStatus("Simulation paused.", false);
+        startBtn.innerText = "Resume Spread";
+      }
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      clearInterval(timer);
+      isSimulating = false;
+      clearMap();
+    });
+
+    clearMap();
+  </script>
+</body>
+</html>

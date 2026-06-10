@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Flood Risk & Historical Disasters</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    body {
+      background: radial-gradient(circle at top center, #1a1a2e 0%, #0d0d14 100%);
+      color: #f1f1f1;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    
+    .container {
+      max-width: 1400px; 
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .back-btn {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: rgba(30, 30, 40, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .back-btn:hover {
+      background: rgba(255, 77, 77, 0.15);
+      color: #ff4d4d;
+      border-color: rgba(255, 77, 77, 0.4);
+      transform: translateX(-3px);
+    }
+    
+    h1 {
+      font-size: 3rem;
+      margin: 20px 0 10px 0;
+      background: linear-gradient(135deg, #ffffff 0%, #ff4d4d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+      letter-spacing: -0.5px;
+    }
+    
+    p.intro-text {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: #a0a0b0;
+      text-align: center;
+      max-width: 850px;
+      margin: 0 auto 30px auto;
+    }
+    
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+      height: 75vh;
+      min-height: 600px;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 77, 77, 0.15);
+      border: 1px solid rgba(255, 77, 77, 0.3);
+      overflow: hidden;
+      background: #0d0d14;
+    }
+
+    #flood-map {
+      width: 100%;
+      height: 100%;
+      background: #0d0d14;
+    }
+
+    .map-legend {
+      background: rgba(15, 15, 20, 0.85);
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 77, 77, 0.3);
+      color: #e0e0e0;
+      font-size: 14px;
+      line-height: 1.6;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: rgba(20, 20, 30, 0.95);
+      color: #fff;
+      border: 1px solid rgba(255, 77, 77, 0.5);
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+    }
+    .leaflet-popup-tip {
+      background: rgba(20, 20, 30, 0.95);
+      border: 1px solid rgba(255, 77, 77, 0.5);
+    }
+    .leaflet-container a.leaflet-popup-close-button {
+      color: #ff4d4d;
+    }
+
+    .popup-title {
+      margin: 0 0 8px 0;
+      color: #fff;
+      font-size: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 5px;
+    }
+    .popup-year {
+      color: #ffaa33;
+      font-weight: bold;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .popup-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #cccccc;
+      margin: 0;
+    }
+
+    .layer-controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      gap: 1px;
+      background: rgba(20, 20, 30, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .layer-btn {
+      background: transparent;
+      color: #a0a0b0;
+      border: none;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .layer-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .layer-btn.active {
+      color: #fff;
+    }
+
+    .layer-btn#btn-danger.active {
+      background: rgba(255, 77, 77, 0.2);
+      border-bottom: 3px solid #ff4d4d;
+    }
+
+    .layer-btn#btn-history.active {
+      background: rgba(255, 140, 0, 0.2);
+      border-bottom: 3px solid #ff8c00;
+    }
+
+    .legend-item {
+      transition: opacity 0.3s ease;
+    }
+    .legend-item.dimmed {
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    <a href="Main.html" class="back-btn">← Back to Dashboard</a>
+    
+    <h1>Global Flood Risk & Echoes of the Deep</h1>
+    <p class="intro-text">Explore the true scale of global flood risk. This interactive dashboard maps 315 structurally vulnerable regions alongside 63 of the most catastrophic historical flood events in recorded history.</p>
+    
+    <div class="map-wrapper">
+      
+      <div class="layer-controls">
+        <button id="btn-danger" class="layer-btn active">Danger Zones</button>
+        <button id="btn-history" class="layer-btn active">Historical Events</button>
+      </div>
+
+      <div id="flood-map"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <script>
+    const worldBounds = [ [-90, -180], [90, 180] ];
+    const map = L.map('flood-map', {
+      maxBounds: worldBounds,
+      maxBoundsViscosity: 1.0, 
+      minZoom: 2,              
+      worldCopyJump: false,
+      zoomControl: false 
+    }).setView([20, 0], 2);
+
+    L.control.zoom({ position: 'topleft' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 10,
+      noWrap: true 
+    }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+      pane: 'shadowPane', 
+      subdomains: 'abcd',
+      maxZoom: 10,
+      noWrap: true
+    }).addTo(map);
+
+    const dangerGroup = L.layerGroup().addTo(map);
+    const historyGroup = L.layerGroup().addTo(map);
+
+    function createBox(lat, lon, width, height, name) {
+      return { bounds: [[lat - height/2, lon - width/2], [lat + height/2, lon + width/2]], name: name };
+    }
+
+    const zones = [
+      createBox(29.5, -90.5, 2, 1.5, "Lower Mississippi Delta"), createBox(32.0, -91.0, 1.5, 3.0, "Mississippi River Floodplain"), createBox(38.0, -90.0, 1.5, 1.5, "Missouri-Mississippi Confluence"), createBox(41.0, -96.0, 2.0, 1.5, "Platte River Basin"), createBox(39.0, -84.0, 3.0, 1.5, "Ohio River Valley"), createBox(35.0, -90.0, 1.5, 2.0, "Memphis Flood Plains"), createBox(38.0, -121.5, 1.0, 1.5, "Sacramento-San Joaquin Delta"), createBox(45.5, -122.5, 1.5, 1.0, "Lower Columbia River"), createBox(48.5, -97.0, 1.0, 2.0, "Red River of the North"), createBox(46.0, -73.0, 2.0, 1.0, "St. Lawrence Seaway"), createBox(40.5, -76.0, 1.5, 1.5, "Susquehanna River Basin"), createBox(18.0, -92.5, 1.5, 1.5, "Grijalva-Usumacinta Basin"), createBox(49.2, -122.8, 1.0, 0.8, "Fraser River Delta"), createBox(64.5, -146.0, 3.0, 2.0, "Yukon Flats"), createBox(26.0, -98.0, 1.5, 1.0, "Rio Grande Valley"), createBox(30.0, -96.0, 1.5, 2.0, "Brazos River Basin"), createBox(41.8, -73.8, 1.0, 2.0, "Hudson River Valley"), createBox(32.5, -81.0, 1.0, 1.5, "Savannah River Basin"), createBox(38.5, -77.0, 1.0, 1.5, "Potomac River Floodplain"), createBox(26.0, -80.5, 1.5, 2.0, "Florida Everglades / Miami Coast"), createBox(30.0, -85.0, 1.5, 1.5, "Apalachicola Basin"), createBox(68.5, -135.0, 3.0, 2.0, "Mackenzie Delta"), createBox(29.8, -95.3, 1.0, 1.0, "Houston Metro Coastal Zone"), createBox(30.2, -90.0, 1.5, 1.0, "Lake Pontchartrain Coast"), createBox(34.0, -78.0, 1.5, 1.5, "Cape Fear River Basin"), createBox(35.5, -76.0, 2.0, 1.5, "Pamlico Sound Coast"), createBox(39.0, -75.0, 1.0, 1.0, "Delaware Bay Coastal Zone"), createBox(40.0, -74.0, 1.0, 1.5, "New Jersey Shoreline"), createBox(42.0, -71.0, 1.0, 1.0, "Boston Coastal Zone"), createBox(44.0, -69.0, 1.5, 1.0, "Maine Coast / Kennebec"), createBox(43.5, -84.0, 1.5, 1.5, "Saginaw Bay Watershed"), createBox(41.5, -83.0, 1.5, 1.0, "Maumee River Basin"), createBox(33.5, -112.0, 1.5, 1.0, "Gila River Floodplain"), createBox(36.0, -115.0, 1.0, 1.0, "Las Vegas Wash"), createBox(47.0, -122.0, 1.0, 1.5, "Puget Sound Coastal Zones"), createBox(44.0, -123.0, 1.0, 2.0, "Willamette Valley"), createBox(34.0, -118.0, 1.5, 1.0, "LA River Basin"), createBox(32.5, -117.0, 1.0, 1.0, "San Diego Coastal Basin"), createBox(21.0, -105.0, 1.5, 1.0, "Nayarit Coast (Mexico)"), createBox(16.5, -99.0, 1.5, 1.0, "Acapulco Coastal Zone"), createBox(19.0, -96.0, 1.5, 1.0, "Veracruz Coastal Plain"), createBox(22.0, -97.0, 1.5, 1.0, "Tampico Coastal Zone"), createBox(25.0, -97.5, 1.5, 1.0, "Matamoros Delta"), createBox(14.0, -91.0, 1.5, 1.0, "Guatemala Pacific Coast"), createBox(13.0, -88.0, 1.5, 1.0, "El Salvador Coastal Plains"), createBox(15.0, -86.0, 2.0, 1.5, "Honduras Aguan Valley"), createBox(12.0, -84.0, 2.0, 1.5, "Nicaragua East Coast"), createBox(10.0, -83.0, 1.5, 1.0, "Costa Rica Limon Coast"), createBox(8.0, -78.0, 2.0, 1.5, "Panama Darien Gap Rivers"), createBox(53.0, -105.0, 3.0, 2.0, "Saskatchewan River Delta"), createBox(58.0, -111.0, 2.0, 2.0, "Athabasca Delta"), createBox(62.0, -115.0, 3.0, 2.0, "Great Slave Lake Plains"), createBox(50.0, -97.0, 2.0, 2.0, "Lake Winnipeg Basin"), createBox(43.0, -81.0, 1.5, 1.5, "Thames River (Ontario)"), createBox(45.5, -66.0, 1.5, 1.5, "St. John River Basin"), createBox(46.0, -63.0, 1.0, 1.0, "PEI Coastal Zones"), createBox(47.5, -53.0, 1.5, 1.5, "Newfoundland Eastern Bays"), createBox(30.0, -81.5, 1.0, 1.0, "Jacksonville / St Johns River"), createBox(28.0, -82.5, 1.0, 1.5, "Tampa Bay Coastal Zone"), createBox(26.5, -82.0, 1.0, 1.0, "Fort Myers Coastal Plain"), createBox(30.5, -88.0, 1.5, 1.0, "Mobile Bay"), createBox(30.0, -89.5, 1.0, 1.0, "Biloxi Coastal Zone"), createBox(29.0, -95.0, 1.0, 1.0, "Galveston Bay"), createBox(27.5, -97.0, 1.0, 1.5, "Corpus Christi Coast"), createBox(18.5, -72.0, 1.5, 1.0, "Port-au-Prince Coastal Zone (Haiti)"),
+      createBox(0.0, -50.0, 3.0, 3.0, "Amazon Delta"), createBox(-2.0, -60.0, 4.0, 3.0, "Central Amazon Basin"), createBox(-33.0, -59.0, 2.5, 3.0, "Parana Delta"), createBox(9.0, -61.0, 3.0, 2.0, "Orinoco Delta"), createBox(10.0, -74.5, 2.0, 2.5, "Magdalena River Basin"), createBox(-9.0, -40.0, 2.0, 3.0, "Sao Francisco River Basin"), createBox(-32.0, -58.0, 1.5, 3.0, "Uruguay River Basin"), createBox(-4.0, -42.0, 2.0, 2.5, "Parnaiba Basin"), createBox(-3.5, -49.0, 2.0, 3.0, "Tocantins Basin"), createBox(-2.5, -79.5, 1.5, 1.5, "Guayas Delta"), createBox(6.5, -58.5, 1.5, 1.5, "Essequibo River Coast"), createBox(-39.0, -64.0, 2.0, 1.5, "Colorado River (Argentina)"), createBox(10.0, -71.5, 2.0, 2.0, "Lake Maracaibo Basin"), createBox(4.5, -76.0, 1.0, 2.5, "Cauca River Valley"), createBox(-1.0, -63.5, 3.0, 2.5, "Rio Negro Basin"), createBox(-1.0, -48.0, 1.5, 1.5, "Belem Coastal Plains"), createBox(-2.5, -44.0, 1.5, 1.5, "Sao Luis Coastal Zone"), createBox(-8.0, -35.0, 1.0, 1.5, "Recife Coastline"), createBox(-13.0, -38.5, 1.0, 1.5, "Salvador Coast"), createBox(-22.0, -41.0, 1.5, 1.0, "Campos dos Goytacazes"), createBox(-23.0, -43.0, 1.0, 1.0, "Rio de Janeiro Coastal Zone"), createBox(-24.0, -46.0, 1.0, 1.0, "Santos Coast"), createBox(-26.0, -48.5, 1.0, 1.0, "Joinville Coastal Plains"), createBox(-30.0, -51.0, 1.5, 1.5, "Porto Alegre / Guaiba Lake"), createBox(-34.5, -58.0, 1.5, 1.0, "Buenos Aires Rio de la Plata"), createBox(-38.0, -57.5, 1.0, 1.0, "Mar del Plata Coast"), createBox(-42.0, -65.0, 1.5, 1.0, "Chubut River Basin"), createBox(-46.0, -67.5, 1.0, 1.0, "Comodoro Rivadavia Coast"), createBox(-51.5, -69.0, 1.5, 1.0, "Rio Gallegos Valley"), createBox(-53.0, -70.5, 1.0, 1.5, "Punta Arenas Coast"), createBox(-41.0, -73.0, 1.5, 1.5, "Puerto Montt Coastal Plain"), createBox(-36.5, -73.0, 1.0, 1.0, "Concepcion Coastal Zone"), createBox(-33.0, -71.5, 1.0, 1.0, "Valparaiso Coastal Basin"), createBox(-29.5, -71.0, 1.0, 1.0, "La Serena Coastal Plain"), createBox(-23.5, -70.5, 1.0, 1.0, "Antofagasta Coastal Zone"), createBox(-18.0, -70.0, 1.0, 1.0, "Arica Coast"), createBox(-12.0, -77.0, 1.0, 1.0, "Lima Rimac Basin"), createBox(-8.0, -79.0, 1.5, 1.0, "Trujillo Coastal Plain"), createBox(-5.0, -81.0, 1.5, 1.0, "Piura River Basin"), createBox(1.0, -79.5, 1.0, 1.0, "Esmeraldas River"), createBox(3.0, -77.0, 1.5, 1.0, "Buenaventura Coast"), createBox(11.0, -74.0, 1.0, 1.0, "Barranquilla Coast"), createBox(11.5, -73.0, 1.0, 1.0, "Santa Marta Coast"), createBox(11.5, -71.5, 1.5, 1.0, "Guajira Peninsula South"), createBox(10.5, -67.0, 1.0, 1.0, "Caracas Coastal Valleys"), createBox(10.0, -64.5, 1.0, 1.0, "Barcelona/Puerto La Cruz Coast"), createBox(5.0, -52.5, 1.5, 1.0, "Cayenne Coastal Plain"), createBox(5.5, -55.0, 1.5, 1.0, "Paramaribo Coast"), createBox(6.5, -58.0, 1.0, 1.0, "Georgetown Coastal Defenses"), createBox(-6.0, -65.0, 3.0, 2.0, "Purus River Basin"),
+      createBox(51.8, 4.5, 2.0, 1.5, "Rhine-Meuse Delta"), createBox(45.0, 29.0, 1.5, 1.5, "Danube Delta"), createBox(44.5, 11.5, 2.5, 1.0, "Po River Valley"), createBox(51.5, 0.0, 1.5, 0.8, "Thames Basin"), createBox(49.0, 2.0, 1.5, 1.0, "Seine River Basin"), createBox(52.0, 13.5, 2.0, 2.0, "Elbe River Basin"), createBox(52.0, 19.5, 2.0, 3.0, "Vistula River Basin"), createBox(47.5, -0.5, 2.5, 1.0, "Loire Valley"), createBox(49.0, 52.0, 2.0, 3.0, "Ural River Basin"), createBox(47.5, 33.5, 2.0, 3.0, "Dnieper River Basin"), createBox(48.5, 40.0, 2.5, 3.0, "Don River Basin"), createBox(37.0, -5.5, 2.0, 1.0, "Guadalquivir Basin"), createBox(41.0, 0.0, 2.0, 1.5, "Ebro Basin"), createBox(39.0, -8.0, 2.0, 1.0, "Tagus River Valley"), createBox(41.2, -7.0, 2.5, 1.0, "Douro River Basin"), createBox(43.5, 4.5, 1.0, 1.0, "Rhone Delta"), createBox(44.5, 0.0, 2.0, 1.0, "Garonne Basin"), createBox(42.0, 12.5, 1.0, 1.0, "Tiber Basin"), createBox(59.0, 32.5, 1.5, 2.0, "Volkhov River Basin"), createBox(60.0, 30.0, 1.5, 1.0, "Neva River Delta"), createBox(47.0, 29.0, 2.0, 2.0, "Dniester Basin"), createBox(66.5, 53.5, 3.0, 3.0, "Pechora River Basin"), createBox(53.5, -2.5, 1.5, 1.0, "Mersey Basin"), createBox(51.5, -3.0, 1.5, 1.0, "Severn Estuary"), createBox(53.5, -0.5, 1.0, 1.0, "Humber Estuary"), createBox(55.0, -1.5, 1.0, 1.0, "Tyne River Basin"), createBox(55.8, -4.2, 1.0, 1.0, "Clyde River Basin"), createBox(53.3, -6.2, 1.0, 1.0, "Dublin Coastal Zone"), createBox(51.8, -8.5, 1.0, 1.0, "Cork River Lee"), createBox(52.6, -8.6, 1.0, 1.5, "Shannon River Basin"), createBox(50.8, 3.5, 1.5, 1.0, "Scheldt Estuary"), createBox(53.0, 8.5, 1.5, 1.5, "Weser River Basin"), createBox(53.5, 10.0, 1.5, 1.0, "Elbe Estuary / Hamburg"), createBox(54.0, 14.0, 1.5, 1.0, "Oder River Estuary"), createBox(52.2, 21.0, 1.5, 1.5, "Warsaw Vistula Plains"), createBox(50.0, 19.9, 1.5, 1.0, "Krakow Vistula Basin"), createBox(48.2, 16.3, 1.5, 1.0, "Vienna Danube Floodplain"), createBox(47.5, 19.0, 1.5, 1.5, "Budapest Danube Basin"), createBox(44.8, 20.4, 1.5, 1.5, "Sava/Danube Confluence"), createBox(42.5, 26.5, 2.0, 1.5, "Tundzha River Basin"), createBox(41.0, 24.0, 1.5, 1.5, "Struma River Basin"), createBox(38.0, 21.5, 1.5, 1.0, "Pineios River Basin (Greece)"), createBox(45.5, 15.5, 1.5, 1.5, "Kupa River Basin"), createBox(46.5, 15.0, 1.5, 1.0, "Drava River Basin"), createBox(48.1, 11.5, 1.5, 1.0, "Isar River (Munich)"), createBox(49.5, 11.0, 1.5, 1.5, "Main River Basin"), createBox(50.5, 7.0, 1.5, 1.0, "Rhine (Cologne/Bonn)"), createBox(49.0, 8.5, 1.5, 1.5, "Upper Rhine Valley"), createBox(47.5, 7.5, 1.5, 1.0, "Basel Rhine Reach"), createBox(46.2, 6.1, 1.0, 1.0, "Rhone (Geneva)"), createBox(45.0, 5.0, 1.5, 1.5, "Isere River Valley"), createBox(43.6, 1.4, 1.5, 1.0, "Toulouse Garonne Basin"), createBox(44.8, -0.5, 1.0, 1.0, "Bordeaux Gironde Estuary"), createBox(47.2, -1.5, 1.5, 1.0, "Nantes Loire Estuary"), createBox(49.4, 1.0, 1.5, 1.0, "Rouen Seine Loops"), createBox(50.0, 2.0, 1.5, 1.0, "Somme River Basin"), createBox(43.7, 10.4, 1.0, 1.0, "Arno River (Pisa/Florence)"), createBox(45.4, 12.3, 1.0, 1.0, "Venice Lagoon"), createBox(40.8, 14.2, 1.0, 1.0, "Naples Coastal Plain"), createBox(38.1, 13.3, 1.0, 1.0, "Palermo Coast"),
+      createBox(23.0, 89.5, 3.0, 2.5, "Ganges-Brahmaputra Delta"), createBox(10.0, 105.5, 2.0, 2.0, "Mekong River Delta"), createBox(27.5, 69.0, 3.0, 5.0, "Indus River Basin"), createBox(31.0, 120.0, 3.0, 2.0, "Yangtze River Delta"), createBox(36.0, 115.5, 3.0, 3.0, "Yellow River Basin"), createBox(22.7, 113.2, 2.5, 1.5, "Pearl River Delta"), createBox(14.7, 100.2, 1.5, 2.5, "Chao Phraya Basin"), createBox(16.2, 95.5, 2.0, 1.5, "Irrawaddy Delta"), createBox(20.7, 106.0, 2.0, 1.5, "Red River Delta (Vietnam)"), createBox(26.2, 87.0, 2.0, 1.5, "Kosi River Region"), createBox(17.0, 81.2, 2.5, 2.0, "Godavari Basin"), createBox(16.0, 80.2, 2.5, 2.0, "Krishna Basin"), createBox(20.2, 86.2, 1.5, 1.5, "Mahanadi Delta"), createBox(0.0, 110.0, 2.0, 2.0, "Kapuas River"), createBox(0.0, 117.0, 2.0, 2.0, "Mahakam River"), createBox(49.5, 133.0, 4.0, 3.0, "Amur River Basin"), createBox(40.5, 82.5, 5.0, 3.0, "Tarim Basin Floodplains"), createBox(41.0, 122.0, 2.0, 2.0, "Liao River Basin"), createBox(39.0, 117.0, 2.0, 2.0, "Hai River Basin"), createBox(33.0, 116.0, 3.0, 2.0, "Huai River Basin"), createBox(38.0, 139.0, 1.0, 1.0, "Shinano River"), createBox(36.0, 139.7, 1.5, 1.0, "Tone River Basin"), createBox(37.5, 127.2, 1.5, 1.0, "Han River (Korea)"), createBox(31.0, 47.0, 2.0, 2.0, "Tigris-Euphrates Delta"), createBox(27.0, 93.0, 4.0, 2.0, "Upper Brahmaputra"), createBox(24.5, 78.0, 2.0, 2.0, "Betwa River Basin"), createBox(26.5, 80.0, 2.0, 2.0, "Gomti River Basin"), createBox(25.5, 83.0, 2.0, 2.0, "Ghaghara River Basin"), createBox(25.0, 85.0, 2.0, 2.0, "Gandak River Basin"), createBox(25.5, 88.0, 1.5, 1.5, "Mahananda River Basin"), createBox(23.5, 87.0, 1.5, 1.5, "Damodar River Basin"), createBox(22.5, 88.5, 1.0, 1.0, "Hooghly River Coastal Zone"), createBox(21.5, 87.0, 1.0, 1.0, "Subarnarekha River Delta"), createBox(11.0, 79.5, 1.5, 1.5, "Kaveri River Delta"), createBox(8.5, 76.5, 1.0, 1.0, "Kerala Backwaters / Kochi"), createBox(13.0, 80.0, 1.0, 1.0, "Chennai Coastal Plain"), createBox(17.5, 83.0, 1.0, 1.0, "Visakhapatnam Coast"), createBox(21.0, 72.5, 1.5, 1.5, "Surat / Tapti River Basin"), createBox(22.0, 73.0, 1.5, 1.5, "Narmada River Delta"), createBox(23.0, 70.0, 2.0, 2.0, "Rann of Kutch"), createBox(25.0, 68.0, 2.0, 2.0, "Lower Indus Plains"), createBox(31.5, 74.0, 2.0, 2.0, "Ravi River Basin (Lahore)"), createBox(33.0, 73.5, 1.5, 1.5, "Jhelum River Basin"), createBox(34.0, 71.5, 1.5, 1.5, "Kabul River Valley (Peshawar)"), createBox(23.5, 91.0, 1.5, 1.5, "Meghna River Basin"), createBox(24.5, 92.0, 1.5, 1.5, "Surma-Meghna System"), createBox(16.5, 97.5, 1.5, 2.0, "Salween River Delta"), createBox(13.5, 104.0, 2.0, 1.5, "Tonle Sap Lake Basin"), createBox(11.5, 104.5, 1.5, 1.5, "Phnom Penh Floodplains"), createBox(16.0, 108.0, 1.0, 1.0, "Da Nang Coastal Plain"), createBox(19.0, 105.5, 1.0, 1.0, "Vinh Coastal Plain"), createBox(14.5, 121.0, 1.0, 1.0, "Metro Manila Coastal Zone"), createBox(15.0, 120.5, 1.5, 1.5, "Pampanga Delta"), createBox(16.0, 120.2, 1.0, 1.0, "Agno River Basin"), createBox(8.5, 125.5, 1.5, 1.5, "Agusan River Basin"), createBox(7.0, 124.5, 1.5, 1.5, "Mindanao River Basin"), createBox(-6.2, 106.8, 1.0, 1.0, "Jakarta Coastal Plains"), createBox(-6.9, 110.4, 1.0, 1.0, "Semarang Coastal Zone"), createBox(-7.2, 112.7, 1.0, 1.0, "Surabaya Brantas Delta"), createBox(3.5, 98.6, 1.0, 1.0, "Medan Coastal Plain"), createBox(-3.0, 104.7, 1.5, 1.5, "Palembang Musi River Basin"), createBox(1.5, 103.5, 1.0, 1.0, "Johor River Basin"), createBox(3.0, 101.5, 1.0, 1.0, "Klang River Valley (KL)"), createBox(5.0, 100.5, 1.0, 1.0, "Perak River Basin"), createBox(6.0, 102.0, 1.5, 1.5, "Kelantan River Delta"), createBox(13.7, 100.5, 1.0, 1.0, "Bangkok Metro Floodplains"), createBox(25.0, 121.5, 1.0, 1.0, "Taipei Basin"), createBox(22.6, 120.3, 1.0, 1.0, "Kaohsiung Coastal Plain"), createBox(26.0, 119.5, 1.0, 1.0, "Min River Delta (Fuzhou)"), createBox(28.0, 120.5, 1.0, 1.0, "Oujiang River Basin"), createBox(29.8, 121.5, 1.0, 1.0, "Ningbo Coastal Zone"), createBox(34.5, 119.5, 1.5, 1.5, "Lianyungang Coastal Plains"), createBox(36.0, 120.5, 1.0, 1.0, "Qingdao Coast"), createBox(39.0, 121.5, 1.0, 1.0, "Dalian Coastal Zone"), createBox(35.0, 135.5, 1.0, 1.0, "Yodo River (Osaka)"), createBox(35.0, 137.0, 1.0, 1.0, "Shonai River (Nagoya)"), createBox(34.0, 133.0, 1.5, 1.0, "Seto Inland Sea Coasts"), createBox(33.5, 130.5, 1.0, 1.0, "Chikugo River Basin"), createBox(38.0, 140.5, 1.0, 1.0, "Abukuma River Basin"), createBox(43.0, 141.5, 1.0, 1.0, "Ishikari River Basin"),
+      createBox(30.7, 31.0, 3.0, 1.5, "Nile Delta"), createBox(-1.0, 17.5, 5.0, 6.0, "Congo Basin"), createBox(14.0, -4.0, 2.0, 2.0, "Niger Inland Delta"), createBox(5.0, 6.5, 3.0, 2.0, "Niger Coastal Delta"), createBox(-17.0, 35.5, 3.0, 2.0, "Zambezi River Basin"), createBox(-24.0, 33.0, 2.0, 2.0, "Limpopo Basin"), createBox(16.0, -15.0, 2.0, 2.0, "Senegal River Valley"), createBox(6.0, 0.0, 2.0, 2.0, "Volta Delta"), createBox(-29.0, 17.0, 2.0, 2.0, "Orange River Basin"), createBox(-7.5, 39.0, 2.0, 1.0, "Rufiji Delta"), createBox(-2.0, 40.0, 2.0, 2.0, "Tana River"), createBox(0.5, 43.0, 2.0, 3.0, "Juba River"), createBox(4.0, 10.0, 2.0, 2.0, "Sanaga River"), createBox(5.0, 9.0, 2.0, 2.0, "Cross River"), createBox(13.0, 14.0, 2.0, 2.0, "Lake Chad Basin"), createBox(31.0, 30.0, 1.0, 1.0, "Alexandria Coastal Zone"), createBox(31.2, 32.3, 1.0, 1.0, "Port Said Coast"), createBox(15.5, 32.5, 1.5, 1.5, "Khartoum Nile Confluence"), createBox(11.5, 37.5, 1.5, 1.5, "Lake Tana Basin"), createBox(2.0, 45.0, 1.5, 2.0, "Shabelle River Basin"), createBox(-4.0, 39.5, 1.0, 1.0, "Mombasa Coast"), createBox(-6.0, 39.0, 1.0, 1.0, "Zanzibar Channel Coast"), createBox(-19.5, 34.5, 2.0, 1.5, "Pungwe River Basin"), createBox(-25.0, 33.5, 1.5, 1.5, "Incomati River Basin"), createBox(-29.5, 31.0, 1.0, 1.0, "Durban Coastal Plain"), createBox(-33.0, 27.5, 1.0, 1.0, "East London Coast"), createBox(-34.0, 25.5, 1.0, 1.0, "Gqeberha Coast"), createBox(-33.5, 18.5, 1.0, 1.0, "Cape Town Flats"), createBox(-18.0, 13.0, 1.5, 1.0, "Cunene River Mouth"), createBox(-8.5, 13.5, 1.0, 1.0, "Luanda Coast"), createBox(3.5, 9.5, 1.5, 1.0, "Douala Coastal Plains"), createBox(6.5, 3.5, 1.5, 1.0, "Lagos Coastal Zone"), createBox(4.5, 7.0, 1.0, 1.0, "Port Harcourt Rivers"), createBox(6.0, 1.0, 1.0, 1.0, "Lome Coastal Plain"), createBox(5.5, -0.5, 1.0, 1.0, "Accra Coast"), createBox(5.0, -4.0, 1.5, 1.0, "Abidjan Coastal Lagoons"), createBox(6.5, -10.5, 1.5, 1.0, "Monrovia Coast"), createBox(8.5, -13.0, 1.5, 1.0, "Freetown Coastal Zone"), createBox(13.5, -16.5, 1.0, 1.0, "Banjul Gambia Delta"), createBox(14.5, -17.0, 1.0, 1.0, "Dakar Coast"),
+      createBox(-35.0, 140.5, 3.0, 2.0, "Murray-Darling Basin"), createBox(-23.0, 150.0, 2.0, 2.0, "Fitzroy Basin"), createBox(-3.5, 143.0, 2.0, 1.0, "Sepik River"), createBox(-37.5, 175.0, 2.0, 1.0, "Waikato Basin"), createBox(-8.5, 143.0, 2.0, 1.0, "Fly River Delta"), createBox(-1.0, 138.0, 2.0, 2.0, "Mamberamo Basin"), createBox(-20.0, 147.7, 1.5, 2.0, "Burdekin River"), createBox(-45.5, 169.5, 1.0, 1.0, "Clutha River"), createBox(-32.5, 151.5, 1.0, 1.0, "Hunter River Basin"), createBox(-27.5, 153.0, 1.5, 1.5, "Brisbane River Coastal Zone"), createBox(-33.5, 151.0, 1.0, 1.0, "Hawkesbury-Nepean Basin"), createBox(-38.0, 145.0, 1.5, 1.5, "Melbourne Yarra River Basin"), createBox(-34.5, 138.5, 1.0, 1.0, "Adelaide Torrens River Basin"), createBox(-32.0, 115.5, 1.0, 1.0, "Swan River (Perth)"), createBox(-12.5, 131.0, 2.0, 2.0, "Darwin Coastal Floodplains"), createBox(-17.5, 141.0, 3.0, 2.0, "Gulf of Carpentaria Coasts"), createBox(-36.5, 174.5, 1.0, 1.0, "Auckland Coastal Zone"), createBox(-43.5, 172.5, 1.0, 1.0, "Christchurch Avon Basin"), createBox(-41.0, 175.0, 1.5, 1.5, "Wellington Hutt Valley"), createBox(-39.5, 176.5, 1.0, 1.0, "Hawke's Bay Ngaruroro")
+    ];
+
+    zones.forEach(zone => {
+      const rect = L.rectangle(zone.bounds, { color: '#ff4d4d', weight: 1.5, fillColor: '#ff2a2a', fillOpacity: 0.25 });
+      rect.bindPopup(`<div style="text-align: center;"><h4 style="margin: 0 0 5px 0; color: #fff; font-size: 15px;">${zone.name}</h4><span style="color:#ff4d4d; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Critical Flood Zone</span></div>`);
+      rect.on('mouseover', function () { this.setStyle({ fillOpacity: 0.6, weight: 2, color: '#ffffff' }); });
+      rect.on('mouseout', function () { this.setStyle({ fillOpacity: 0.25, weight: 1.5, color: '#ff4d4d' }); });
+      dangerGroup.addLayer(rect);
+    });
+
+    const historicalFloods = [
+      { lat: 32.0, lon: 118.0, radius: 250000, name: "Yangtze-Huai River Floods", year: "1931", desc: "Widely considered the deadliest natural disaster in recorded history, killing between 1 and 4 million people across central China." },
+      { lat: 34.8, lon: 113.6, radius: 150000, name: "Yellow River Flood", year: "1887", desc: "Dikes built by farmers failed, devastating central China and claiming an estimated 900,000 to 2 million lives." },
+      { lat: 32.9, lon: 113.5, radius: 100000, name: "Banqiao Dam Failure", year: "1975", desc: "Typhoon Nina destroyed the dam in Henan, wiping out downstream cities and killing up to 230,000 people." },
+      { lat: 34.8, lon: 114.3, radius: 150000, name: "Yellow River Flood", year: "1938", desc: "Nationalist troops destroyed dikes to halt Japanese forces, drowning an estimated 500,000 to 800,000 people." },
+      { lat: 30.5, lon: 114.3, radius: 200000, name: "Yangtze River Floods", year: "1998", desc: "Devastating floods that affected over 223 million people and caused massive economic destruction." },
+      { lat: 30.6, lon: 114.3, radius: 200000, name: "Yangtze River Floods", year: "1954", desc: "Catastrophic flooding that claimed over 30,000 lives directly and caused widespread famine." },
+      { lat: 34.8, lon: 114.3, radius: 60000, name: "Kaifeng Flood", year: "1642", desc: "The Ming dynasty destroyed dikes on the Yellow River to break a siege, resulting in over 300,000 deaths." },
+      { lat: 28.0, lon: 69.0, radius: 300000, name: "Great Pakistan Floods", year: "2010", desc: "Record monsoon rains inundated about one-fifth of the country's total land area, directly affecting 20 million people." },
+      { lat: 26.0, lon: 68.0, radius: 350000, name: "Pakistan Mega-Floods", year: "2022", desc: "Unprecedented glacial melt and monsoons submerged one-third of the country, displaced 33 million, and caused $30B in damages." },
+      { lat: 23.8, lon: 90.3, radius: 200000, name: "Bangladesh Floods", year: "1998", desc: "Extreme Himalayan runoff covered more than 75% of the country, leaving 30 million people temporarily homeless." },
+      { lat: 14.3, lon: 100.5, radius: 150000, name: "Chao Phraya Basin Floods", year: "2011", desc: "Devastated Thailand's industrial zones, heavily inundated Bangkok, and caused an estimated $46B in economic losses." },
+      { lat: 30.7, lon: 79.0, radius: 80000, name: "North India Cloudburst", year: "2013", desc: "Multi-day cloudbursts caused catastrophic landslides and flash floods in the Himalayas, killing over 5,700 people." },
+      { lat: 26.1, lon: 86.9, radius: 150000, name: "Bihar Flood", year: "2008", desc: "The Kosi river breached its banks in Nepal and India, displacing over 3 million people." },
+      { lat: 19.0, lon: 72.8, radius: 80000, name: "Maharashtra Floods", year: "2005", desc: "Mumbai received 944mm of rain in 24 hours, completely paralyzing the city and killing over 1,000 people." },
+      { lat: 10.0, lon: 76.5, radius: 120000, name: "Kerala Floods", year: "2018", desc: "The worst flooding in Kerala in nearly a century, claiming nearly 500 lives." },
+      { lat: 34.0, lon: 74.8, radius: 150000, name: "Kashmir Floods", year: "2014", desc: "Devastating floods across the Kashmir valley heavily impacting both India and Pakistan." },
+      { lat: 22.0, lon: 91.0, radius: 200000, name: "Bangladesh Cyclone", year: "1991", desc: "A massive storm surge swept inland, claiming over 138,000 lives." },
+      { lat: 20.0, lon: 86.0, radius: 180000, name: "Odisha Cyclone", year: "1999", desc: "A historic super cyclone pushed a massive surge into India, leaving over 10,000 dead." },
+      { lat: -6.2, lon: 106.8, radius: 80000, name: "Jakarta Floods", year: "2007", desc: "A major disaster that inundated 70% of Indonesia's capital city, displacing hundreds of thousands." },
+      { lat: 16.4, lon: 107.6, radius: 120000, name: "Central Vietnam Floods", year: "1999", desc: "The worst floods in a century in the historic city of Hue, killing over 700 people." },
+      { lat: 35.0, lon: 136.8, radius: 150000, name: "Isewan Typhoon", year: "1959", desc: "A brutal storm surge destroyed sea walls in Japan, killing over 5,000 people." },
+      { lat: 34.5, lon: 133.0, radius: 120000, name: "West Japan Floods", year: "2018", desc: "Historic rainfall in southwestern Japan caused rivers to break their banks and triggered severe landslides, killing 225." },
+      { lat: 16.0, lon: 95.0, radius: 200000, name: "Cyclone Nargis Storm Surge", year: "2008", desc: "Sent a massive, deadly storm surge straight into the low-lying Irrawaddy Delta in Myanmar, killing over 138,000 people." },
+      { lat: 34.7, lon: 113.6, radius: 90000, name: "Henan Floods", year: "2021", desc: "The region received a year's worth of rain in just three days, catastrophically flooding the Zhengzhou subways." },
+
+      { lat: 51.6, lon: 4.0, radius: 100000, name: "North Sea Flood", year: "1953", desc: "A massive storm surge overwhelmed sea defenses in the Netherlands and the UK, killing over 2,500 people." },
+      { lat: 50.5, lon: 6.5, radius: 100000, name: "Western European Floods", year: "2021", desc: "Extreme rainfall caused rivers to burst their banks, entirely devastating the Ahr valley in Germany and killing over 220." },
+      { lat: 43.7, lon: 11.2, radius: 30000, name: "Flood of the Arno", year: "1966", desc: "Flooded the historic center of Florence, Italy, killing 101 people and damaging millions of priceless Renaissance masterpieces." },
+      { lat: 53.0, lon: 5.0, radius: 150000, name: "St. Marcellus Flood", year: "1228", desc: "A devastating storm surge that struck the Netherlands and Germany, claiming an estimated 100,000 lives." },
+      { lat: 54.0, lon: 8.0, radius: 150000, name: "Grote Mandrenke", year: "1362", desc: "A massive south-westerly gale that swept across the British Isles and sunk entire islands in the North Sea." },
+      { lat: 51.5, lon: 4.0, radius: 120000, name: "St. Felix Flood", year: "1530", desc: "Washed away 18 entire villages in the Netherlands, killing over 100,000 people." },
+      { lat: 54.5, lon: 8.5, radius: 100000, name: "Burchardi Flood", year: "1634", desc: "Struck the North Sea coast, splitting the island of Strand and killing 8,000 people." },
+      { lat: 53.5, lon: 7.5, radius: 150000, name: "Christmas Flood", year: "1717", desc: "A violent storm that hit the Netherlands, Germany, and Scandinavia, leaving 14,000 dead." },
+      { lat: 51.1, lon: 17.0, radius: 150000, name: "Central European Flood", year: "1997", desc: "Often called the worst flood of the 20th century in the Oder and Morava river basins." },
+      { lat: 50.0, lon: 14.4, radius: 150000, name: "European Floods", year: "2002", desc: "Massive flooding of the Elbe and Danube rivers, heavily damaging the historic city of Prague." },
+      { lat: 53.5, lon: 10.0, radius: 60000, name: "North Sea Flood (Hamburg)", year: "1962", desc: "A storm surge pushed the Elbe river inland, catching Hamburg by surprise and killing 315." },
+      { lat: 51.2, lon: -3.8, radius: 30000, name: "Lynmouth Flood", year: "1952", desc: "A devastating flash flood that swept through an English coastal village, killing 34." },
+      { lat: 44.3, lon: 11.8, radius: 80000, name: "Emilia-Romagna Floods", year: "2023", desc: "Historic, torrential rains caused severe infrastructure damage and flooding across Northern Italy." },
+
+      { lat: 33.5, lon: -91.0, radius: 250000, name: "Great Mississippi Flood", year: "1927", desc: "The most destructive river flood in US history. It inundated 27,000 square miles up to 30 feet deep." },
+      { lat: 29.95, lon: -90.07, radius: 80000, name: "Hurricane Katrina Levee Failures", year: "2005", desc: "Catastrophic levee failures flooded 80% of New Orleans, trapping thousands and causing over 1,800 deaths." },
+      { lat: 10.6, lon: -66.9, radius: 40000, name: "Vargas Tragedy", year: "1999", desc: "Torrential rains triggered massive flash floods and debris flows that buried coastal towns in Venezuela, leaving 10,000 to 30,000 dead." },
+      { lat: -22.3, lon: -42.8, radius: 50000, name: "Serrana Region Mudslides", year: "2011", desc: "One of Brazil's worst natural disasters. Extreme rainfall triggered mudslides that killed over 900 people near Rio de Janeiro." },
+      { lat: 40.3, lon: -78.9, radius: 30000, name: "Johnstown Flood", year: "1889", desc: "The catastrophic failure of the South Fork Dam sent a 60-foot wall of water into the Pennsylvania town, killing 2,209 people." },
+      { lat: 38.6, lon: -90.2, radius: 300000, name: "The Great Flood", year: "1993", desc: "Devastated the American Midwest. The Mississippi and Missouri rivers remained above flood stage for months, destroying 10,000 homes." },
+      { lat: 29.7, lon: -95.3, radius: 100000, name: "Hurricane Harvey", year: "2017", desc: "Dropped an unprecedented 60 inches of rain on Houston, Texas, causing $125 billion in damage." },
+      { lat: 40.7, lon: -74.0, radius: 100000, name: "Hurricane Sandy", year: "2012", desc: "An epic storm surge flooded the New York City subway system and devastated coastal communities." },
+      { lat: 39.7, lon: -84.1, radius: 50000, name: "Great Dayton Flood", year: "1913", desc: "Ohio's greatest natural disaster, causing 360 deaths and immense destruction." },
+      { lat: 44.0, lon: -103.2, radius: 40000, name: "Black Hills Flood", year: "1972", desc: "A devastating flash flood in Rapid City, South Dakota that claimed 238 lives." },
+      { lat: 40.4, lon: -105.2, radius: 30000, name: "Big Thompson Canyon Flood", year: "1976", desc: "A violent, sudden flash flood in a Colorado canyon that killed 144 people." },
+      { lat: 29.9, lon: -90.0, radius: 100000, name: "Hurricane Betsy", year: "1965", desc: "Flooded large parts of New Orleans and became the first billion-dollar hurricane in US history." },
+      { lat: 4.6, lon: -74.0, radius: 150000, name: "Colombia Floods", year: "2010", desc: "Unprecedented La Niña rains caused flooding and landslides that affected over 2 million people." },
+      { lat: -30.0, lon: -51.2, radius: 250000, name: "Rio Grande do Sul Floods", year: "2024", desc: "Historic, catastrophic flooding that submerged major parts of southern Brazil, displacing millions." },
+      { lat: -34.9, lon: -57.9, radius: 60000, name: "La Plata Flood", year: "2013", desc: "An extreme flash flood event in Argentina that claimed over 80 lives in a matter of hours." },
+
+      { lat: 32.7, lon: 22.6, radius: 40000, name: "Derna Dam Collapses", year: "2023", desc: "Storm Daniel caused two aging dams to collapse in Libya, sending a wall of water that washed entire neighborhoods into the sea, killing over 4,000." },
+      { lat: -19.8, lon: 34.8, radius: 150000, name: "Cyclone Idai", year: "2019", desc: "Created a massive 'inland ocean' in Mozambique, destroying the city of Beira and killing over 1,000 across Southern Africa." },
+      { lat: -21.0, lon: 34.0, radius: 150000, name: "Mozambique Flood", year: "2000", desc: "A catastrophic disaster following Cyclone Leon-Eline that devastated southern Africa." },
+      { lat: 8.0, lon: 6.0, radius: 250000, name: "Nigeria Floods", year: "2022", desc: "The worst flooding in a decade, killing over 600 people and displacing 1.4 million." },
+      { lat: 2.0, lon: 45.0, radius: 250000, name: "Horn of Africa Floods", year: "2006", desc: "Severe unseasonal rains submerged hundreds of villages in Somalia, Kenya, and Ethiopia." },
+      { lat: 15.5, lon: 32.5, radius: 100000, name: "Khartoum Floods", year: "1988", desc: "Massive floods in Sudan that left over 1 million people entirely homeless." },
+      { lat: -29.8, lon: 31.0, radius: 100000, name: "KwaZulu-Natal Floods", year: "2022", desc: "The deadliest natural disaster in South Africa's history, claiming over 400 lives." },
+
+      { lat: -27.5, lon: 152.0, radius: 300000, name: "Queensland Floods", year: "2010-2011", desc: "Submerged an area of Australia the size of France and Germany combined, crippling the city of Brisbane." },
+      { lat: -28.0, lon: 153.0, radius: 250000, name: "Eastern Australia Floods", year: "2022", desc: "A widespread flood catastrophe across Queensland and New South Wales." },
+      { lat: -27.4, lon: 153.0, radius: 80000, name: "Brisbane Flood", year: "1974", desc: "Cyclone Wanda caused the river to peak, flooding thousands of homes in the city." },
+      { lat: -40.3, lon: 175.6, radius: 100000, name: "Manawatu Floods", year: "2004", desc: "An unprecedented weather bomb caused record-breaking floods across New Zealand's lower North Island." }
+    ];
+
+    historicalFloods.forEach(event => {
+      const circle = L.circle([event.lat, event.lon], { color: '#ff8c00', weight: 2, fillColor: '#ff4500', fillOpacity: 0.5, radius: event.radius });
+      circle.bindPopup(`<div style="min-width: 200px;"><h4 class="popup-title">${event.name}</h4><span class="popup-year">Event Year: ${event.year}</span><p class="popup-desc">${event.desc}</p></div>`);
+      circle.on('mouseover', function () { this.setStyle({ fillOpacity: 0.8, weight: 3, color: '#ffffff' }); });
+      circle.on('mouseout', function () { this.setStyle({ fillOpacity: 0.5, weight: 2, color: '#ff8c00' }); });
+      historyGroup.addLayer(circle);
+    });
+
+    const btnDanger = document.getElementById('btn-danger');
+    const btnHistory = document.getElementById('btn-history');
+
+    btnDanger.addEventListener('click', function() {
+      this.classList.toggle('active');
+      const legendDanger = document.getElementById('legend-danger');
+      if (map.hasLayer(dangerGroup)) {
+        map.removeLayer(dangerGroup);
+        if(legendDanger) legendDanger.classList.add('dimmed');
+      } else {
+        map.addLayer(dangerGroup);
+        if(legendDanger) legendDanger.classList.remove('dimmed');
+      }
+    });
+
+    btnHistory.addEventListener('click', function() {
+      this.classList.toggle('active');
+      const legendHistory = document.getElementById('legend-history');
+      if (map.hasLayer(historyGroup)) {
+        map.removeLayer(historyGroup);
+        if(legendHistory) legendHistory.classList.add('dimmed');
+      } else {
+        map.addLayer(historyGroup);
+        if(legendHistory) legendHistory.classList.remove('dimmed');
+      }
+    });
+
+    const legend = L.control({position: 'bottomright'});
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'map-legend');
+      div.innerHTML = `
+        <strong style="font-size: 1.1em; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; display: block; margin-bottom: 10px;">Dashboard Key</strong>
+        
+        <div id="legend-danger" class="legend-item" style="display: flex; align-items: center; margin-bottom: 8px;">
+          <div style="width: 16px; height: 16px; background: rgba(255, 42, 42, 0.4); border: 1.5px solid #ff4d4d; margin-right: 8px; border-radius: 2px;"></div>
+          <span>315 Global Flood Danger Zones</span>
+        </div>
+        
+        <div id="legend-history" class="legend-item" style="display: flex; align-items: center; margin-bottom: 4px;">
+          <div style="width: 16px; height: 16px; background: rgba(255, 69, 0, 0.5); border: 2px solid #ff8c00; margin-right: 8px; border-radius: 50%;"></div>
+          <span>63 Historical Catastrophe Epicenters</span>
+        </div>
+
+        <em style="font-size:12px; color:#a0a0b0; display: block; margin-top: 8px;">Hover & click any zone for analytics</em>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+
+  </script>
+</body>
+</html>
